@@ -4,11 +4,11 @@ import Model.CustomEnumValues.Fuel;
 
 public class Car extends Vehicle {
 
-    private String model;
-    private Fuel fuel;
-    private int engineCapacity; //pojemność slinka
-    private int trunkCapacity; //pojemność bagażnika
-    private int numberOfDoors;
+    private final String model;
+    private final Fuel fuel;
+    private final int engineCapacity; //pojemność slinka
+    private final int trunkCapacity; //pojemność bagażnika
+    private final int numberOfDoors;
 
     /**
      *

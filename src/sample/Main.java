@@ -1,10 +1,5 @@
 package sample;
-import DataBase.DataBase;
-import Model.Client;
-import Model.CustomEnumValues.Fuel;
-import Model.CustomExceptions.WrongPeselException;
 import Model.Model;
-import Model.Rent;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -12,7 +7,6 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import Model.Logs;
 
-import java.util.List;
 import java.util.logging.Logger;
 
 public class Main extends Application {

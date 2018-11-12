@@ -6,14 +6,14 @@ import Model.Vehicles.Motorcycle;
 import Model.Vehicles.Vehicle;
 
 public class Rent {
-    private int rentID;
-    private Client client;
+    private final int rentID;
+    private final Client client;
     private Car car;
     private Bike bike;
     private Motorcycle motorcycle;
-    private int priceForRent;
-    private String dateOfRental;
-    private String dateOfReturn;
+    private final int priceForRent;
+    private final String dateOfRental;
+    private final String dateOfReturn;
 
     public Rent(Car car, Client client, int rentID, int priceForRent, String dateOfRental, String dateOfReturn) {
         this.car = car;

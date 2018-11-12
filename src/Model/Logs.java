@@ -2,8 +2,6 @@ package Model;
 
 import java.io.IOException;
 import java.util.logging.*;
-import java.util.logging.SimpleFormatter;
-import java.util.logging.FileHandler;
 
 
 public  class Logs {
@@ -21,9 +19,7 @@ public  class Logs {
             logger.addHandler(fileHandler);
             SimpleFormatter formatter = new SimpleFormatter();
             fileHandler.setFormatter(formatter);
-        } catch (SecurityException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+        } catch (SecurityException | IOException e) {
             e.printStackTrace();
         }
     }

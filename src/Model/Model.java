@@ -16,7 +16,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class Model {
-    DataBase database;
+    private final DataBase database;
 
     public Model() {
         this.database = new DataBase();
@@ -46,7 +46,7 @@ public class Model {
      * @return Return true if was added properly, otherwise false
      */
     public boolean addRent(String clientPesel, String vehicleID, int typeOfVehicle, String dateOfRental, String dateOfReturn) {
-        int clientType = 0;
+        int clientType;
         try {
             clientType = database.getClientByPesel(clientPesel).getType();
         } catch (Exception e) {
@@ -239,7 +239,7 @@ public class Model {
      * @return number of rental days
      */
     private long countDays(String dateOfRental, String dateOfReturn ){
-        long diff = 0;
+        long diff;
         try {
             SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy", Locale.ENGLISH);
             Date firstDate = sdf.parse(dateOfRental);
@@ -269,7 +269,7 @@ public class Model {
      * @param clientPesel
      */
     private void updateClientType(String clientPesel){
-        Client client = null;
+        Client client;
         try {
             client = database.getClientByPesel(clientPesel);
             int moneySpent = client.getSumPaidForAllRents();
@@ -291,7 +291,6 @@ public class Model {
                 return;
             }if (moneySpent > 50000 ) {
                 database.setClientType(clientPesel, 5);
-                return;
             }
         } catch (UnknownClientTypeException e) {
             Logs.logger.warning("Unknown Client Type");

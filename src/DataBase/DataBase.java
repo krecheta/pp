@@ -25,7 +25,7 @@ public class DataBase {
     private static final String DRIVER = "org.sqlite.JDBC";
     private static final String DB_URL = "jdbc:sqlite:biblioteka.db";
 
-    String ClientTableStruct = "(pesel varchar(11) PRIMARY KEY," +
+    private final String ClientTableStruct = "(pesel varchar(11) PRIMARY KEY," +
                                 "firstName varchar(30)," +
                                 "lastName varchar(50)," +
                                 "age int," +
@@ -34,7 +34,7 @@ public class DataBase {
                                 "type int," +
                                 "sum_paid_for_all_rents int)"; // kikla typów klienta, 1 - brak rabatu, 5 - rabat 25%
 
-    String RentTableStruct = "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
+    private final String RentTableStruct = "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
                                     "clientID varchar(11)," +
                                     "vehicleID varchar(10), " +
                                     "type_of_vehicle int," + // 1 - car, 2 - bike, 3 - motorcycle
@@ -43,7 +43,7 @@ public class DataBase {
                                     "date_of_return varchar(10))";  // in format 01-23-2018 | DD-MM-YYYY
 
 
-    String CarTableStruct = "(id varchar(10) PRIMARY KEY ," +
+    private final String CarTableStruct = "(id varchar(10) PRIMARY KEY ," +
                                     "name varchar(30)," +
                                     "course int," +
                                     "availability int," + // 0 - available, 1 - not available
@@ -54,7 +54,7 @@ public class DataBase {
                                     "number_of_doors int," +
                                     "price_per_day int)";
 
-    String BikeTableStruct = "(id varchar(10) PRIMARY KEY ," +
+    private final String BikeTableStruct = "(id varchar(10) PRIMARY KEY ," +
                                 "name varchar(30)," +
                                 "course int," +
                                 "availability int," + // 0 - available, 1 - not available
@@ -64,7 +64,7 @@ public class DataBase {
                                 "size_of_wheele int," +
                                 "price_per_day int)" ;
 
-    String MotorcycleTableStruct = "(id varchar(10) PRIMARY KEY ," +
+    private final String MotorcycleTableStruct = "(id varchar(10) PRIMARY KEY ," +
                                 "name varchar(30)," +
                                 "course int," +
                                 "availability int," + // 0 - available, 1 - not available
@@ -103,8 +103,8 @@ public class DataBase {
      */
     public boolean addClient(String where, String pesel, String firstName, String lastName, int age, int phoneNumber, String address) {
         try {
-            PreparedStatement prepStmt = null;
-            if(where == "actual")
+            PreparedStatement prepStmt;
+            if(where.equals("actual"))
                  prepStmt = conn.prepareStatement(
                         "insert into clients values (?, ?, ?, ?, ?, ?, ?, ?);");
             else
@@ -171,8 +171,8 @@ public class DataBase {
      */
     public boolean addCar(String where, String id, String name, int course, String model, Fuel fuel, int engineCapacity, int trunkCapacity, int numberOfDoors, int pricePerDay) {
         try {
-            PreparedStatement prepStmt = null;
-           if(where == "actual")
+            PreparedStatement prepStmt;
+           if(where.equals("actual"))
                 prepStmt = conn.prepareStatement(
                     "insert into cars values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
            else
@@ -212,8 +212,8 @@ public class DataBase {
      */
     public boolean addBike(String where, String id, String name, int course, String typeOfBike, String color, int tireWidth, int sizeOfWheele, int pricePerDay) {
         try {
-            PreparedStatement prepStmt = null;
-            if(where == "actual")
+            PreparedStatement prepStmt;
+            if(where.equals("actual"))
                 prepStmt = conn.prepareStatement(
                     "insert into bikes values (?, ?, ?, ?, ?, ?, ?, ?, ?);");
             else
@@ -250,8 +250,8 @@ public class DataBase {
      */
     public boolean addMotorcycle(String where, String id, String name, int course, String model, int engineCapacity, int pricePerDay) {
         try {
-            PreparedStatement prepStmt = null;
-            if(where == "actual")
+            PreparedStatement prepStmt;
+            if(where.equals("actual"))
                 prepStmt = conn.prepareStatement(
                     "insert into motorcycles values (?, ?, ?, ?, ?, ?, ?);");
             else
@@ -279,7 +279,7 @@ public class DataBase {
      * @return true if client exists in archival_clients table, otherwise false
      */
     public boolean isClientExist(String clientPesel){
-        ResultSet result = null;
+        ResultSet result;
         try {
             result = stat.executeQuery("SELECT * FROM archival_clients where pesel = " + clientPesel);
         } catch (SQLException e) {
@@ -288,7 +288,7 @@ public class DataBase {
             return false;
         }
 
-        int size = 1;
+        int size;
         try {
             size = countSizeResultSet(result);
         } catch (SQLException e) {
@@ -297,10 +297,7 @@ public class DataBase {
             return false;
         }
 
-        if (size > 0)
-            return true;
-        else
-            return false;
+        return size > 0;
     }
 
     public boolean isVehicleExists(String vehicleID, int type){
@@ -322,7 +319,7 @@ public class DataBase {
             Logs.logger.warning(e.getMessage());
             return false;
         }
-        int size = 1;
+        int size;
         try {
             size = countSizeResultSet(result);
         } catch (SQLException e) {
@@ -330,10 +327,7 @@ public class DataBase {
             Logs.logger.warning(e.getMessage());
             return false;        }
 
-        if (size > 0)
-            return true;
-        else
-            return false;
+        return size > 0;
     }
 
     public boolean setVehicleInaccessible(String vehicleID, int typeOfVehicle){
@@ -389,7 +383,7 @@ public class DataBase {
     }
 
     public boolean setClientType(String clientPesel, int clientTtype){
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         try {
             prepStmt = conn.prepareStatement(
                     "update clients set type =" + clientTtype + " where pesel = " + clientPesel);
@@ -439,7 +433,7 @@ public class DataBase {
      * @return
      */
     public boolean deleteRentFromActualRents(int rentID){
-        PreparedStatement prepStmt = null;
+        PreparedStatement prepStmt;
         try {
             prepStmt = conn.prepareStatement(
                     "delete from actual_rents where id = " + rentID );
@@ -454,7 +448,7 @@ public class DataBase {
     }
 
     public List<Rent> getClientActualRents(String clientPesel){
-        List<Rent> acutalRents = null;
+        List<Rent> acutalRents;
         try {
             acutalRents = getAllActualRents();
         } catch (UnknownClientTypeException e) {
@@ -465,17 +459,17 @@ public class DataBase {
             return new ArrayList<>();
         }
         List<Rent> clientAcutalRents = new ArrayList<>();
-        Rent rent = null;
-        for (int i=0; i< acutalRents.size(); i++){
-            rent = acutalRents.get(i);
-            if(rent.getClient().getPesel().equals(clientPesel))
+        Rent rent;
+        for (Rent acutalRent : acutalRents) {
+            rent = acutalRent;
+            if (rent.getClient().getPesel().equals(clientPesel))
                 clientAcutalRents.add(rent);
         }
         return clientAcutalRents;
     }
 
     public List<Rent> getClientArchivalRents(String clientPesel){
-        List<Rent> archivalRents = null;
+        List<Rent> archivalRents;
         try {
             archivalRents = getAllArchivalRents();
         } catch (UnknownClientTypeException e) {
@@ -486,10 +480,10 @@ public class DataBase {
             return new ArrayList<>();
         }
         List<Rent> clientArchivalRents = new ArrayList<>();
-        Rent rent = null;
-        for (int i=0; i< archivalRents.size(); i++){
-            rent = archivalRents.get(i);
-            if(rent.getClient().getPesel().equals(clientPesel))
+        Rent rent;
+        for (Rent archivalRent : archivalRents) {
+            rent = archivalRent;
+            if (rent.getClient().getPesel().equals(clientPesel))
                 clientArchivalRents.add(rent);
         }
         return clientArchivalRents;
@@ -529,9 +523,9 @@ public class DataBase {
     }
 
     public Rent getRentByRentID(int rentID) {
-        int id = -1, typeOfVehicle = -1, priceForRent = -1;
-        String dateOfRental = null, dateOfReturn = null, clientID = null, vehicleID = null;
-        Car car = null; Bike bike = null; Motorcycle motorcycle = null; Client client = null;
+        int id = -1, typeOfVehicle, priceForRent;
+        String dateOfRental, dateOfReturn, clientID, vehicleID;
+        Car car = null; Bike bike = null; Motorcycle motorcycle = null; Client client;
         try {
             ResultSet result = stat.executeQuery("SELECT * FROM actual_rents where id = " + rentID );
                 clientID = result.getString("clientID");
@@ -565,11 +559,11 @@ public class DataBase {
     }
 
     public Car getCarByID (String carID){
-        ResultSet CarResult = null;
-        int course = 0, fuel, engineCapacity = 0, trunkCapacity = 0, numberOfDoors = 0, pricePerDay = 0, availability = -1;
-        boolean avail = false;
-        Fuel fuelEnum = null;
-        String name = null, model = null;
+        ResultSet CarResult;
+        int course, fuel, engineCapacity, trunkCapacity, numberOfDoors, pricePerDay, availability;
+        boolean avail;
+        Fuel fuelEnum;
+        String name, model;
         try {
             CarResult = stat.executeQuery("SELECT * FROM cars where id=" + carID);
                 name = CarResult.getString("name");
@@ -586,10 +580,7 @@ public class DataBase {
             else
                 fuelEnum = Fuel.diesel;
 
-            if (availability == 0)
-                avail = true;
-            else
-                avail = false;
+            avail = availability == 0;
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get car by carID");
             Logs.logger.warning(e.getMessage());
@@ -599,10 +590,10 @@ public class DataBase {
     }
 
     public Bike getbikeByID (String bikeID){
-        ResultSet BikeResult = null;
-        int course = 0, pricePerDay = 0, tireWidth = 0, sizeOfWheele = 0, availability = -1;
-        boolean avail = false;
-        String name = null, typeOfBike = null, color = null;
+        ResultSet BikeResult;
+        int course, pricePerDay, tireWidth, sizeOfWheele, availability;
+        boolean avail;
+        String name, typeOfBike, color;
         try {
             BikeResult = stat.executeQuery("SELECT * FROM bikes where id=" + bikeID);
             name = BikeResult.getString("name");
@@ -613,10 +604,7 @@ public class DataBase {
             sizeOfWheele = BikeResult.getInt("size_of_wheele");
             pricePerDay = BikeResult.getInt("price_per_day");
             availability = BikeResult.getInt("availability");
-            if (availability == 0)
-                avail = true;
-            else
-                avail = false;
+            avail = availability == 0;
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get bike by bikeID");
             Logs.logger.warning(e.getMessage());
@@ -626,10 +614,10 @@ public class DataBase {
     }
 
     public Motorcycle getMotorcycleByID (String motorcycleID){
-        ResultSet MotorcycleResult = null;
-        int course = 0, pricePerDay = 0, engineCapacity =0, availability = -1;
-        boolean avail = false;
-        String name = null, model = null;
+        ResultSet MotorcycleResult;
+        int course, pricePerDay, engineCapacity, availability;
+        boolean avail;
+        String name, model;
         try {
             MotorcycleResult = stat.executeQuery("SELECT * FROM motorcycles where id=" + motorcycleID);
                 name = MotorcycleResult.getString("name");
@@ -638,10 +626,7 @@ public class DataBase {
                 engineCapacity = MotorcycleResult.getInt("engine_capacity");
                 pricePerDay = MotorcycleResult.getInt("price_per_day");
                 availability = MotorcycleResult.getInt("availability");
-                if (availability == 0)
-                    avail = true;
-                else
-                    avail = false;
+            avail = availability == 0;
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get motorcycle by motorcycleID");
             Logs.logger.warning(e.getMessage());
@@ -651,10 +636,10 @@ public class DataBase {
     }
 
     public Client getClientByPesel(String pesel) throws UnknownClientTypeException, WrongPeselException {
-        ResultSet ClientResult = null;
-        int phoneNumber = 0, type = 0, sumPaidForAllRents =0, age = -1;
+        ResultSet ClientResult;
+        int phoneNumber, type, sumPaidForAllRents, age;
         boolean avail = false;
-        String firstName = null, lastName = null, address = null;
+        String firstName, lastName, address;
         try {
             ClientResult = stat.executeQuery("SELECT * FROM clients where pesel=" + pesel);
                 firstName = ClientResult.getString("firstName");

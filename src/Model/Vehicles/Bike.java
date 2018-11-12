@@ -2,10 +2,10 @@ package Model.Vehicles;
 
 public class Bike extends Vehicle{
 
-    private String typeOfBike;
-    private String color;
-    private int tireWidth; // szerokość opony
-    private int sizeOfWheele; //wielkosc kola np 26
+    private final String typeOfBike;
+    private final String color;
+    private final int tireWidth; // szerokość opony
+    private final int sizeOfWheele; //wielkosc kola np 26
 
     /**
      *

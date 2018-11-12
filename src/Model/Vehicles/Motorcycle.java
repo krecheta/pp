@@ -1,8 +1,8 @@
 package Model.Vehicles;
 
 public class Motorcycle extends Vehicle {
-    private String model;
-    private int engineCapacity; // pojemność slinka
+    private final String model;
+    private final int engineCapacity; // pojemność slinka
 
     /**
      *
