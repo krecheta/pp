@@ -32,7 +32,8 @@ public class DataBase {
                                 "phone_number int," +
                                 "address varchar(255)," +
                                 "type int," +
-                                "sum_paid_for_all_rents int)"; // kikla typów klienta, 1 - brak rabatu, 5 - rabat 25%
+                                "sum_paid_for_all_rents int"; // kikla typów klienta, 1 - brak rabatu, 5 - rabat 25%
+
 
     private final String RentTableStruct = "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
                                     "clientID varchar(11)," +
@@ -40,37 +41,96 @@ public class DataBase {
                                     "type_of_vehicle int," + // 1 - car, 2 - bike, 3 - motorcycle
                                     "price_for_rent int," +
                                     "date_of_rental varchar(10)," + // in format 01-23-2018 | DD-MM-YYYY
-                                    "date_of_return varchar(10))";  // in format 01-23-2018 | DD-MM-YYYY
+                                    "date_of_return varchar(10)," ;  // in format 01-23-2018 | DD-MM-YYYY
 
 
     private final String CarTableStruct = "(id varchar(10) PRIMARY KEY ," +
                                     "name varchar(30)," +
                                     "course int," +
                                     "availability int," + // 0 - available, 1 - not available
+                                    "type_of_vehicle int," + // 1 - car, 2 - bike, 3 - motorcycle
                                     "model varchar(30)," +
                                     "fuel int," + // 0 - petrol, 1 - diesel
                                     "engine_capacity int," +
                                     "trunk_capacity int," +
                                     "number_of_doors int," +
-                                    "price_per_day int)";
+                                    "price_per_day int,";
 
     private final String BikeTableStruct = "(id varchar(10) PRIMARY KEY ," +
                                 "name varchar(30)," +
                                 "course int," +
+                                "type_of_vehicle int," + // 1 - car, 2 - bike, 3 - motorcycle
                                 "availability int," + // 0 - available, 1 - not available
                                 "type_of_bike varchar(30)," +
                                 "color varchar(20)," +
                                 "tire_width int," +
                                 "size_of_wheele int," +
-                                "price_per_day int)" ;
+                                "price_per_day int," ;
 
     private final String MotorcycleTableStruct = "(id varchar(10) PRIMARY KEY ," +
                                 "name varchar(30)," +
                                 "course int," +
+                                "type_of_vehicle int," + // 1 - car, 2 - bike, 3 - motorcycle
                                 "availability int," + // 0 - available, 1 - not available
                                 "model varchar(30)," +
                                 "engine_capacity int," +
-                                "price_per_day int)";
+                                "price_per_day int,";
+
+
+    /**
+     * Setup Database
+     */
+    private void createTables()  {
+
+    //Actual Relations
+        String relationRents_Clients = " foreign key (clientID) references clients(pesel)";
+        String relationRents_vehicle1 = " foreign key (vehicleID) references cars(id)";
+        String relationRents_vehicle2 = " foreign key (vehicleID) references bikes(id)";
+        String relationRents_vehicle3 = " foreign key (vehicleID) references motorcycles(id)";
+        String relationTzpeVehicle_Rents = " foreign key (type_of_vehicle) references actual_rents(type_of_vehicle)";
+
+    //Archival relation
+        String archivalRelationTypeVehicle_Rents = " foreign key (type_of_vehicle) references archival_rents(type_of_vehicle)";
+        String ArchivalRelationRents_Clients = " foreign key (clientID) references archival_clients(pesel)";
+        String ArchivalRelrelationRents_vehicle1 = " foreign key (vehicleID) references archival_cars(id)";
+        String ArchivalRelrelationRents_vehicle2 = " foreign key (vehicleID) references archival_bikes(id)";
+        String ArchivalRelrelationRents_vehicle3 = " foreign key (vehicleID) references archival_motorcycles(id)";
+
+    // Creating tables
+        String clientsTable = "CREATE TABLE IF NOT EXISTS clients" +  ClientTableStruct + ")";
+        String actualRentTable = "CREATE TABLE IF NOT EXISTS actual_rents" +  RentTableStruct +  relationRents_Clients + relationRents_vehicle1 + relationRents_vehicle2 + relationRents_vehicle3 + ")";
+        String CarTable = "CREATE TABLE IF NOT EXISTS cars" +  CarTableStruct + relationTzpeVehicle_Rents + ")";
+        String bikeTable= "CREATE TABLE IF NOT EXISTS bikes" +  BikeTableStruct + relationTzpeVehicle_Rents + ")";
+        String motorcycleTable = "CREATE TABLE IF NOT EXISTS motorcycles" +  MotorcycleTableStruct + relationTzpeVehicle_Rents + ")";
+
+    // Creating archiwal tables
+        String archivalClientsTable = "CREATE TABLE IF NOT EXISTS archival_clients" +  ClientTableStruct + ")";
+        String archivalRentTable = "CREATE TABLE IF NOT EXISTS archival_rents" +  RentTableStruct + ArchivalRelationRents_Clients + ArchivalRelrelationRents_vehicle1 + ArchivalRelrelationRents_vehicle2 + ArchivalRelrelationRents_vehicle3 + ")";
+        String archivalCarTable = "CREATE TABLE IF NOT EXISTS archival_cars" +  CarTableStruct + archivalRelationTypeVehicle_Rents + ")";
+        String archivalBikeTable= "CREATE TABLE IF NOT EXISTS archival_bikes" +  BikeTableStruct + archivalRelationTypeVehicle_Rents + ")";
+        String archivalMotorcycleTable = "CREATE TABLE IF NOT EXISTS archival_motorcycles" +  MotorcycleTableStruct + archivalRelationTypeVehicle_Rents + ")";
+
+        try {
+// Actual tables
+            stat.execute(clientsTable);
+            stat.execute(actualRentTable);
+            stat.execute(CarTable);
+            stat.execute(bikeTable);
+            stat.execute(motorcycleTable);
+// Archiwal tables
+            stat.execute(archivalClientsTable);
+            stat.execute(archivalRentTable);
+            stat.execute(archivalCarTable);
+            stat.execute(archivalBikeTable);
+            stat.execute(archivalMotorcycleTable);
+
+//            stat.execute(relation1);
+//
+        } catch (SQLException e) {
+            Logs.logger.warning("Can't create tables properly");
+            e.printStackTrace();
+        }
+    }
 
     public DataBase() {
         try {
@@ -106,10 +166,10 @@ public class DataBase {
             PreparedStatement prepStmt;
             if(where.equals("actual"))
                  prepStmt = conn.prepareStatement(
-                        "insert into clients values (?, ?, ?, ?, ?, ?, ?, ?);");
+                        "insert into clients(pesel, firstName, lastName, age, phone_number, address, type, sum_paid_for_all_rents) values (?, ?, ?, ?, ?, ?, ?, ?);");
             else
                 prepStmt = conn.prepareStatement(
-                        "insert into archival_clients values (?, ?, ?, ?, ?, ?, ?, ?);");
+                        "insert into archival_clients(pesel, firstName, lastName, age, phone_number, address, type, sum_paid_for_all_rents) values (?, ?, ?, ?, ?, ?, ?, ?);");
             prepStmt.setString(1, pesel);
             prepStmt.setString(2, firstName);
             prepStmt.setString(3, lastName);
@@ -174,10 +234,10 @@ public class DataBase {
             PreparedStatement prepStmt;
            if(where.equals("actual"))
                 prepStmt = conn.prepareStatement(
-                    "insert into cars values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+                    "insert into cars(id, name, course, availability, model, fuel, engine_capacity, trunk_capacity, number_of_doors, price_per_day) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
            else
                prepStmt = conn.prepareStatement(
-                       "insert into archival_cars values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
+                       "insert into archival_cars(id, name, course, availability, model, fuel, engine_capacity, trunk_capacity, number_of_doors, price_per_day) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);");
             prepStmt.setString(1, id);
             prepStmt.setString(2, name);
             prepStmt.setInt(3, course);
@@ -215,10 +275,10 @@ public class DataBase {
             PreparedStatement prepStmt;
             if(where.equals("actual"))
                 prepStmt = conn.prepareStatement(
-                    "insert into bikes values (?, ?, ?, ?, ?, ?, ?, ?, ?);");
+                    "insert into bikes(id, name, course, availability, type_of_bike, color, tire_width, size_of_wheele, price_per_day) values (?, ?, ?, ?, ?, ?, ?, ?, ?);");
             else
                 prepStmt = conn.prepareStatement(
-                    "insert into archival_bikes values (?, ?, ?, ?, ?, ?, ?, ?, ?);");
+                    "insert into archival_bikes(id, name, course, availability, type_of_bike, color, tire_width, size_of_wheele, price_per_day) values (?, ?, ?, ?, ?, ?, ?, ?, ?);");
             prepStmt.setString(1, id);
             prepStmt.setString(2, name);
             prepStmt.setInt(3, course);
@@ -253,10 +313,10 @@ public class DataBase {
             PreparedStatement prepStmt;
             if(where.equals("actual"))
                 prepStmt = conn.prepareStatement(
-                    "insert into motorcycles values (?, ?, ?, ?, ?, ?, ?);");
+                    "insert into motorcycles(id, name, course, availability, model, engineCapacity, price_per_day) values (?, ?, ?, ?, ?, ?, ?);");
             else
                 prepStmt = conn.prepareStatement(
-                        "insert into archival_motorcycles values (?, ?, ?, ?, ?, ?, ?);");
+                        "insert into archival_motorcycles(id, name, course, availability, model, engineCapacity, price_per_day) values (?, ?, ?, ?, ?, ?, ?);");
             prepStmt.setString(1, id);
             prepStmt.setString(2, name);
             prepStmt.setInt(3, course);
@@ -489,7 +549,7 @@ public class DataBase {
         return clientArchivalRents;
     }
 
-    public List<Client> getAllClients() throws UnknownClientTypeException, WrongPeselException {
+    public List<Client> getAllClients() {
         List<Client> clients = new ArrayList<>();
         try {
             ResultSet result = stat.executeQuery("SELECT * FROM clients");
@@ -506,7 +566,7 @@ public class DataBase {
                 sumPaidForAllRents = result.getInt("sum_paid_for_all_rents");
             clients.add(new Client(pesel, firstName, lastName, age, phoneNumber, address, type, sumPaidForAllRents));
             }
-        } catch (SQLException e) {
+        } catch (SQLException | UnknownClientTypeException | WrongPeselException e) {
             Logs.logger.warning("Error when try to get lists all client");
             Logs.logger.warning(e.getMessage());
             return new ArrayList<>();
@@ -673,40 +733,14 @@ public class DataBase {
        return pricePerDay;
     }
 
-    /**
-     * Setup Database
-     */
-    private void createTables()  {
-        String clientsTable = "CREATE TABLE IF NOT EXISTS clients" +  ClientTableStruct;
-        String actualRentTable = "CREATE TABLE IF NOT EXISTS actual_rents" +  RentTableStruct;
-        String CarTable = "CREATE TABLE IF NOT EXISTS cars" +  CarTableStruct;
-        String bikeTable= "CREATE TABLE IF NOT EXISTS bikes" +  BikeTableStruct;
-        String motorcycleTable = "CREATE TABLE IF NOT EXISTS motorcycles" +  MotorcycleTableStruct;
-// archiwal tables
-        String archivalClientsTable = "CREATE TABLE IF NOT EXISTS archival_clients" +  ClientTableStruct;
-        String archivalRentTable = "CREATE TABLE IF NOT EXISTS archival_rents" +  RentTableStruct;
-        String archivalCarTable = "CREATE TABLE IF NOT EXISTS archival_cars" +  CarTableStruct;
-        String archivalBikeTable= "CREATE TABLE IF NOT EXISTS archival_bikes" +  BikeTableStruct;
-        String archivalMotorcycleTable = "CREATE TABLE IF NOT EXISTS archival_motorcycles" +  MotorcycleTableStruct;
-
+    public void closeConnection() {
         try {
-// Actual tables
-            stat.execute(clientsTable);
-            stat.execute(actualRentTable);
-            stat.execute(CarTable);
-            stat.execute(bikeTable);
-            stat.execute(motorcycleTable);
-// Archiwal tables
-            stat.execute(archivalClientsTable);
-            stat.execute(archivalRentTable);
-            stat.execute(archivalCarTable);
-            stat.execute(archivalBikeTable);
-            stat.execute(archivalMotorcycleTable);
+            conn.close();
         } catch (SQLException e) {
-            Logs.logger.warning("Can't create tables properly");
-            e.printStackTrace();
+            Logs.logger.warning("Close connection error");
         }
     }
+
 
     private List<Rent> getAllRent(String typeOfRents) throws UnknownClientTypeException, WrongPeselException {
         List<Rent> rent = new ArrayList<>();

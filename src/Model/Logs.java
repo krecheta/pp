@@ -19,7 +19,9 @@ public  class Logs {
             logger.addHandler(fileHandler);
             SimpleFormatter formatter = new SimpleFormatter();
             fileHandler.setFormatter(formatter);
-        } catch (SecurityException | IOException e) {
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
