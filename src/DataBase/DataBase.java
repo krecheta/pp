@@ -546,7 +546,7 @@ public class DataBase {
     }
 
     public Rent getRentByRentID(int rentID) {
-        int id = -1, typeOfVehicle, priceForRent;
+        int id , typeOfVehicle, priceForRent;
         String dateOfRental, dateOfReturn, clientID, vehicleID;
         Car car = null; Bike bike = null; Motorcycle motorcycle = null; Client client;
         try {
