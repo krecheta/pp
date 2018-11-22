@@ -8,33 +8,13 @@ import Model.Vehicles.Vehicle;
 public class Rent {
     private final int rentID;
     private final Client client;
-    private Car car;
-    private Bike bike;
-    private Motorcycle motorcycle;
+    private Vehicle vehicle;
     private final int priceForRent;
     private final String dateOfRental;
     private final String dateOfReturn;
 
-    public Rent(Car car, Client client, int rentID, int priceForRent, String dateOfRental, String dateOfReturn) {
-        this.car = car;
-        this.client = client;
-        this.rentID = rentID;
-        this.priceForRent = priceForRent;
-        this.dateOfRental = dateOfRental;
-        this.dateOfReturn = dateOfReturn;
-    }
-
-    public Rent(Bike bike, Client client, int rentID, int priceForRent, String dateOfRental, String dateOfReturn) {
-        this.bike = bike;
-        this.client = client;
-        this.rentID = rentID;
-        this.priceForRent = priceForRent;
-        this.dateOfRental = dateOfRental;
-        this.dateOfReturn = dateOfReturn;
-    }
-
-    public Rent(Motorcycle motorcycle, Client client, int rentID, int priceForRent, String dateOfRental, String dateOfReturn) {
-        this.motorcycle = motorcycle;
+    public Rent(Vehicle vehicle, Client client, int rentID, int priceForRent, String dateOfRental, String dateOfReturn) {
+        this.vehicle = vehicle;
         this.client = client;
         this.rentID = rentID;
         this.priceForRent = priceForRent;
@@ -43,17 +23,13 @@ public class Rent {
     }
 
     public Vehicle getVehicle() {
-        if(this.car != null)
-            return this.car;
-        if(this.bike != null)
-            return this.bike;
-        return this.motorcycle;
+        return this.vehicle;
     }
 
     public int getTypeOfVehicle() {
-        if(this.car != null)
+        if(this.vehicle instanceof Car)
             return 1;
-        if(this.bike != null)
+        if(this.vehicle instanceof Bike)
             return 2;
         return 3;
     }
@@ -68,28 +44,13 @@ public class Rent {
 
     @Override
     public String toString() {
-        if(this.car != null){
-            return "Rent[" +
-                    "car = " + this.car.toString() +
-                    ", client=" + this.client.toString() +
-                    ", rentID=" + rentID +
-                    ", priceForRent=" + priceForRent +
-                    '}';
-        }
-        if(this.bike != null){
-            return "Rent[" +
-                    "bike = " + this.bike.toString() +
-                    ", client=" + this.client.toString() +
-                    ", rentID=" + rentID +
-                    ", priceForRent=" + priceForRent +
-                    '}';
-        }
-            return "Rent[" +
-                    "motorcycle = " + this.motorcycle.toString() +
-                    ", client=" + this.client.toString() +
-                    ", rentID=" + rentID +
-                    ", priceForRent=" + priceForRent +
-                    '}';
+        return "Wypożyczenie{" +
+            this.getNameOfVehicle() + " = " + this.vehicle.toString() +
+            ", klient = " + this.client.toString() +
+            ", koszt wypożyczenia = " + priceForRent +
+            ", data wypożyczenia = " + this.dateOfRental +
+            ", planowana data zwrotu = " + this.dateOfReturn +
+            '}';
         }
 
     public int getPriceForRent() {
@@ -110,5 +71,13 @@ public class Rent {
      */
     public String getDateOfReturn() {
         return dateOfReturn;
+    }
+
+    private String getNameOfVehicle() {
+        if(this.vehicle instanceof Car)
+            return "Samochód";
+        if(this.vehicle instanceof Bike)
+            return "Rower";
+        return "Motocykl";
     }
 }

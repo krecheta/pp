@@ -46,4 +46,14 @@ public abstract class Vehicle {
     public int getPricePerDay() {
         return pricePerDay;
     }
+
+    @Override
+    public String toString() {
+   String string = "id = " + this.id +
+                   ", nazwa = " + this.name +
+                   ", przebieg = " + this.course +
+                   ", dostepnosc = "  + this.availability +
+                   ", cena za dzien = " + this.pricePerDay;
+    return string;
+    }
 }
