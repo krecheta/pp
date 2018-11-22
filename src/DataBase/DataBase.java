@@ -763,6 +763,7 @@ public class DataBase {
         String firstName, lastName, address;
         try {
             ClientResult = stat.executeQuery("SELECT * FROM archival_clients where pesel=" + "\"" + pesel + "\"");
+
             firstName = ClientResult.getString("firstName");
             lastName = ClientResult.getString("lastName");
             age = ClientResult.getInt("age");
@@ -956,6 +957,14 @@ public class DataBase {
                 prepStmt = conn.prepareStatement(
                         "insert into actual_rents(clientID, vehicleID, type_of_vehicle, price_for_rent, date_of_rental, date_of_return) values ( ?, ?, ?, ?, ?, ?);");
             else
+
+//                "(id INTEGER PRIMARY KEY AUTOINCREMENT," +
+//                        "clientID varchar(11)," +
+//                        "vehicleID varchar(10), " +
+//                        "type_of_vehicle int," + // 1 - car, 2 - bike, 3 - motorcycle
+//                        "price_for_rent int," +
+//                        "date_of_rental varchar(10)," + // in format 01-23-2018 | DD-MM-YYYY
+//                        "date_of_return varchar(10)," ;  //
                 prepStmt = conn.prepareStatement(
                         "insert into archival_rents (clientID, vehicleID, type_of_vehicle, price_for_rent, date_of_rental, date_of_return) values (?, ?, ?, ?, ?, ?);");
             prepStmt.setString(1, clientID);
