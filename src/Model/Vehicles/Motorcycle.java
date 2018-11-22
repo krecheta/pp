@@ -30,9 +30,10 @@ public class Motorcycle extends Vehicle {
 
     @Override
     public String toString() {
-        return "Motorcycle{" +
-                "model='" + model + '\'' +
-                ", engineCapacity=" + engineCapacity +
+        return "{" +
+                super.toString() +
+                ", model = " + model +
+                ", pojemność silnika = " + engineCapacity +
                 '}';
     }
 }

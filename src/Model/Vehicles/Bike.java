@@ -45,11 +45,12 @@ public class Bike extends Vehicle{
 
     @Override
     public String toString() {
-        return "Bike{" +
-                "typeOfBike='" + typeOfBike + '\'' +
-                ", color='" + color + '\'' +
-                ", tireWidth=" + tireWidth +
-                ", sizeOfWheele=" + sizeOfWheele +
+        return "{" +
+                super.toString() +
+                ", typ = " + typeOfBike +
+                ", kolor = " + color +
+                ", szerokość opon = " + tireWidth +
+                ", rozmiar kola = " + sizeOfWheele +
                 '}';
     }
 }

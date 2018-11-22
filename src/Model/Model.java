@@ -7,6 +7,8 @@ import Model.CustomExceptions.WrongPeselException;
 import Model.Vehicles.Bike;
 import Model.Vehicles.Car;
 import Model.Vehicles.Motorcycle;
+import Model.Vehicles.Vehicle;
+
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -38,45 +40,39 @@ public class Model {
 
     /**
      *  This function add rent to table named 'actual_rents', which contains all not ended rents of users
-     * @param clientPesel
-     * @param vehicleID
-     * @param typeOfVehicle This is number from 1 to 3, 1 - car, 2 - bike, 3 - motorcycle
+     * @param client
+     * @param vehicle
      * @param dateOfRental Date when client want to rent a vehicle in format dd-MM-yyyy
      * @param dateOfReturn Date when client want to return a vehicle in format dd-MM-yyyy
      * @return Return true if was added properly, otherwise false
      */
-    public boolean addRent(String clientPesel, String vehicleID, int typeOfVehicle, String dateOfRental, String dateOfReturn) {
-        int clientType;
-        try {
-            clientType = database.getClientByPesel(clientPesel).getType();
-        } catch (Exception e) {
-            Logs.logger.warning("Error when try to add rent");
-            Logs.logger.warning(e.getMessage());
-            return false;
-        }
+    public boolean addRent(Client client, Vehicle vehicle, String dateOfRental, String dateOfReturn) {
+       String vehicleID = vehicle.getId();
     // calculate price for rent a vehicle
-        int priceForRent = calculatePriceForRent(vehicleID, typeOfVehicle, dateOfRental, dateOfReturn, clientType);
-
+        int priceForRent = calculatePriceForRent(client, vehicle, dateOfRental, dateOfReturn);
+        int typeOfVehicle;
     // check if vehicle can be rent
         boolean canRent = false;
-        switch(typeOfVehicle) {
-            case 1: // vehicle is a car
-                Car car = database.getCarByID(vehicleID);
-                canRent = car.isAvailability();
-                break;
-            case 2: // vehicle is a bike
-                Bike bike = database.getbikeByID(vehicleID);
-                canRent = bike.isAvailability();
-                break;
-            case 3: // vehicle is a motorcycle
-                Motorcycle motorcycle = database.getMotorcycleByID(vehicleID);
-                canRent = motorcycle.isAvailability();
-                break;
+        if(vehicle instanceof Car){
+            Car car = database.getCarByID(vehicleID);
+            canRent = car.isAvailability();
+            typeOfVehicle = 1;
         }
+        else if(vehicle instanceof Bike){
+            Bike bike = database.getbikeByID(vehicleID);
+            canRent = bike.isAvailability();
+            typeOfVehicle = 2;
+        }
+        else{
+            Motorcycle motorcycle = database.getMotorcycleByID(vehicleID);
+            canRent = motorcycle.isAvailability();
+            typeOfVehicle = 3;
+        }
+
 //rent a vehicle
         if (canRent) {
             database.setVehicleInaccessible(vehicleID, typeOfVehicle);
-            return database.addActualRent(clientPesel, vehicleID, typeOfVehicle, priceForRent, dateOfRental, dateOfReturn);
+            return database.addActualRent(client.getPesel(), vehicleID, typeOfVehicle, priceForRent, dateOfRental, dateOfReturn);
         }
         else
             return false;
@@ -132,7 +128,7 @@ public class Model {
     /**
      * Return of vehicle. It change status of returnet car to available, add archival rents, and calculate onece again clients payments
      * @param rentID
-     * @param penalty use this parameter when user retur crashed car
+     * @param penalty use this parameter when user returned crashed car
      * @return
      */
     public boolean returnVehicle(int rentID, int penalty){
@@ -154,7 +150,6 @@ public class Model {
         database.deleteRentFromActualRents(rentID);
         database.setVehicleAccessible(rent.getVehicle().getId(), rent.getTypeOfVehicle());
         database.updateClientSumPaid(rent.getClient().getPesel(), priceForRent);
-        updateClientType(rent.getClient().getPesel());
         return true;
     }
 
@@ -164,7 +159,7 @@ public class Model {
      */
     public List<Client> getAllClients() {
         try {
-            return database.getAllClients();
+            return database.getAllClients("actual");
         } catch(Exception e){
             Logs.logger.warning("Error when try to get all clients");
             Logs.logger.warning(e.getMessage());
@@ -217,19 +212,31 @@ public class Model {
     }
 
     /**
-     *  Calculate price for a rent with discounts of client. CLient can have maximum discount 25%.
-     * @param vehicleID
-     * @param typeOfVehicle
+     * @param client
+     * @return return percent of client discount, for each 10 000 spent
+     *          clients get 5% of discount, maximum discount is 25%
+     */
+    public int getClientPercentOfDiscount(Client client){
+        int sumPaideByClient = client.getSumPaidForAllRents();
+        int percentOfDiscount = (sumPaideByClient / 10000) * 5;
+        if(percentOfDiscount > 25)
+            return 25;
+        return percentOfDiscount;
+    }
+
+
+    /**
+     *
+     * @param vehicle
      * @param dateOfRental
      * @param dateOfReturn
-     * @param clientType from 0 to 5
      * @return
      */
-    private int calculatePriceForRent(String vehicleID, int typeOfVehicle, String dateOfRental, String dateOfReturn, int clientType){
-        int pricePerDay = database.getPricePerDayOfVehicle(vehicleID, typeOfVehicle);
+    private int calculatePriceForRent(Client client, Vehicle vehicle, String dateOfRental, String dateOfReturn){
+        int pricePerDay = database.getPricePerDayOfVehicle(vehicle);
+        int discount = getClientPercentOfDiscount(client);
         long days = countDays(dateOfRental, dateOfReturn);
-        float discount = (100 - (5 * clientType)) / 100;
-        return Math.round((days * pricePerDay) * discount) ;
+        return Math.round((days * pricePerDay) * (100 - discount)) ;
     }
 
     /**
@@ -262,43 +269,6 @@ public class Model {
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         Date date = new Date();
         return sdf.format(date);
-    }
-
-    /**
-     * Check and change client type when rent for specific sum of money
-     * @param clientPesel
-     */
-    private void updateClientType(String clientPesel){
-        Client client;
-        try {
-            client = database.getClientByPesel(clientPesel);
-            int moneySpent = client.getSumPaidForAllRents();
-            if (client.getType() == 5)
-                return;
-            if (moneySpent > 10000 && moneySpent < 20000) {
-                database.setClientType(clientPesel, 1);
-                return;
-            }
-            if (moneySpent > 20000 && moneySpent < 30000) {
-                database.setClientType(clientPesel, 2);
-                return;
-            }
-            if (moneySpent > 30000 && moneySpent < 40000) {
-                database.setClientType(clientPesel, 3);
-                return;
-            }if (moneySpent > 40000 && moneySpent < 50000) {
-                database.setClientType(clientPesel, 4);
-                return;
-            }if (moneySpent > 50000 ) {
-                database.setClientType(clientPesel, 5);
-            }
-        } catch (UnknownClientTypeException e) {
-            Logs.logger.warning("Unknown Client Type");
-            Logs.logger.warning(e.getMessage());
-        } catch (WrongPeselException e) {
-            Logs.logger.warning("Wrong Pesel ");
-            Logs.logger.warning(e.getMessage());
-        }
     }
 
     /**

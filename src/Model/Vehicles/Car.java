@@ -54,13 +54,14 @@ public class Car extends Vehicle {
 
     @Override
     public String toString() {
-        return "Car{" +
-                "model='" + model + '\'' +
-                ", fuel=" + fuel +
-                ", engineCapacity=" + engineCapacity +
-                ", trunkCapacity=" + trunkCapacity +
-                ", numberOfDoors=" + numberOfDoors +
-                '}';
+        return "{" +
+            super.toString() +
+            ", model = " + model +
+            ", paliwo = " + fuel +
+            ", pojemność silnika = " + engineCapacity +
+            ", pojemność bagażnika = " + trunkCapacity +
+            ", liczba drzwi = " + numberOfDoors +
+            '}';
     }
 }
 
