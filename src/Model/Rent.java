@@ -2,7 +2,6 @@ package Model;
 
 import Model.Vehicles.Bike;
 import Model.Vehicles.Car;
-import Model.Vehicles.Motorcycle;
 import Model.Vehicles.Vehicle;
 
 public class Rent {
@@ -12,14 +11,16 @@ public class Rent {
     private final int priceForRent;
     private final String dateOfRental;
     private final String dateOfReturn;
+    private final Employee employee ;
 
-    public Rent(Vehicle vehicle, Client client, int rentID, int priceForRent, String dateOfRental, String dateOfReturn) {
+    public Rent(Vehicle vehicle, Client client, Employee employee, int rentID, int priceForRent, String dateOfRental, String dateOfReturn) {
         this.vehicle = vehicle;
         this.client = client;
         this.rentID = rentID;
         this.priceForRent = priceForRent;
         this.dateOfRental = dateOfRental;
         this.dateOfReturn = dateOfReturn;
+        this.employee = employee;
     }
 
     public Vehicle getVehicle() {
@@ -79,5 +80,9 @@ public class Rent {
         if(this.vehicle instanceof Bike)
             return "Rower";
         return "Motocykl";
+    }
+
+    public int getEmployeeID(){
+        return this.employee.getId();
     }
 }

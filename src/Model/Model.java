@@ -2,13 +2,11 @@ package Model;
 
 import DataBase.DataBase;
 import Model.CustomEnumValues.Fuel;
-import Model.CustomExceptions.UnknownClientTypeException;
-import Model.CustomExceptions.WrongPeselException;
+import Model.CustomExceptions.ErrorMessageException;
 import Model.Vehicles.Bike;
 import Model.Vehicles.Car;
 import Model.Vehicles.Motorcycle;
 import Model.Vehicles.Vehicle;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -18,12 +16,12 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 public class Model {
+
     private final DataBase database;
-
-    public Model() {
+    public Model() throws ErrorMessageException {
         this.database = new DataBase();
-    }
 
+    }
     /**
      *  This function add client to table named 'clients'
      * @param pesel
@@ -34,8 +32,51 @@ public class Model {
      * @param address
      * @return Return true if user was added properly, otherwise false
      */
-    public boolean addClient(String pesel, String firstName, String lastName, int age, int phoneNumber, String address) {
-        return database.addClient("actual", pesel, firstName, lastName, age, phoneNumber, address);
+    public boolean addClient(String pesel, String firstName, String lastName, int age, int phoneNumber, String address) throws ErrorMessageException {
+        return database.addClient( pesel, firstName, lastName, age, phoneNumber, address);
+    }
+
+    public boolean updateCientData(String pesel, String firstName, String lastName, int age, int phoneNumber, String address) throws ErrorMessageException{
+        Client client = getClientByPesel(pesel);
+        if (client == null){
+            throw new ErrorMessageException("Client doesn't exist");
+        }
+
+    // When exception appears when updating client trnsaction should be aborted... but we don't have transaction... so that is why we are using catches in that case :)
+        try{
+            return database.updateCientData(pesel, firstName, lastName, age, phoneNumber, address);
+        }catch (Exception e){
+            database.updateCientData(client.getPesel(), client.getFirstName(), client.getLastName(), client.getAge(), client.getPhoneNumber(), client.getAddress());
+            throw e;
+        }
+    }
+
+    public List<Client> getAllActualClients() throws ErrorMessageException{
+       return database.getAllActualClients();
+    }
+
+    public  List<Client> getAllArchivalClients() throws ErrorMessageException{
+        return database.getAllArchivalClients();
+    }
+
+    public  Client getClientByPesel(String pesel) throws ErrorMessageException {
+        return database.getClientByPesel(pesel);
+    }
+
+    public boolean transferClientToArchivalClients(String pesel) throws ErrorMessageException {
+        Client client = getClientByPesel(pesel);
+        if (client == null){
+            throw new ErrorMessageException("Client doesn't exist");
+        }
+        return database.setClientAsArchival(pesel);
+    }
+
+    public List<Rent> getClientActualRents(String pesel) throws ErrorMessageException {
+        return database.getClientActualRents(pesel);
+    }
+
+    public List<Rent> getClientArchivalRents(String pesel) throws ErrorMessageException {
+        return database.getClientArchivalRents(pesel);
     }
 
     /**
@@ -46,13 +87,13 @@ public class Model {
      * @param dateOfReturn Date when client want to return a vehicle in format dd-MM-yyyy
      * @return Return true if was added properly, otherwise false
      */
-    public boolean addRent(Client client, Vehicle vehicle, String dateOfRental, String dateOfReturn) {
-       String vehicleID = vehicle.getId();
-    // calculate price for rent a vehicle
+    public boolean addRent(Client client, Vehicle vehicle, String dateOfRental, String dateOfReturn, int employeeID) throws ErrorMessageException {
+        String vehicleID = vehicle.getId();
         int priceForRent = calculatePriceForRent(client, vehicle, dateOfRental, dateOfReturn);
         int typeOfVehicle;
+        boolean canRent ;
+
     // check if vehicle can be rent
-        boolean canRent = false;
         if(vehicle instanceof Car){
             Car car = database.getCarByID(vehicleID);
             canRent = car.isAvailability();
@@ -71,11 +112,28 @@ public class Model {
 
 //rent a vehicle
         if (canRent) {
-            database.setVehicleInaccessible(vehicleID, typeOfVehicle);
-            return database.addActualRent(client.getPesel(), vehicleID, typeOfVehicle, priceForRent, dateOfRental, dateOfReturn);
+            try {
+                database.setVehicleInaccessible(vehicleID, typeOfVehicle);
+            } catch (ErrorMessageException e) {
+                database.setVehicleAccessible(vehicleID, typeOfVehicle);
+                throw e;
+            }
+            return database.addRent(client.getPesel(), vehicleID, typeOfVehicle, priceForRent, dateOfRental, dateOfReturn, employeeID);
         }
         else
-            return false;
+            throw new ErrorMessageException("Vehicle is inaccessible");
+    }
+
+    public  List<Rent> getAllActualRents() throws ErrorMessageException {
+        return database.getAllActualRents();
+    }
+
+    public  List<Rent> getAllArchivalRents() throws ErrorMessageException {
+        return database.getAllArchivalRents();
+    }
+
+    public Rent getRentByRentID(int rentID) throws ErrorMessageException {
+        return database.getRentByRentID(rentID);
     }
 
     /**
@@ -91,9 +149,30 @@ public class Model {
      * @param pricePerDay
      * @return Return true if was added properly, otherwise false
      */
-    public boolean addCar(String id, String name, int course, String model, Fuel fuel, int engineCapacity, int trunkCapacity, int numberOfDoors, int pricePerDay) {
-        return database.addCar("actual", id, name, course, model, fuel, engineCapacity, trunkCapacity, numberOfDoors, pricePerDay);
+    public boolean addCar(String id, String name, int course, String model, Fuel fuel, int engineCapacity, int trunkCapacity, int numberOfDoors, int pricePerDay) throws ErrorMessageException {
+        return database.addCar( id, name, course, model, fuel, engineCapacity, trunkCapacity, numberOfDoors, pricePerDay);
     }
+
+    public Car getCarByID(String carID) throws ErrorMessageException {
+        return database.getCarByID(carID);
+    }
+
+    public  List<Car> getAllAvaiableCars() throws ErrorMessageException {
+        return database.getAllAvaiableCars();
+    }
+
+    public List<Car> getAllABorrowedCars() throws ErrorMessageException {
+        return database.getAllABorrowedCars();
+    }
+
+    public List<Car> getAllActuallCars() throws ErrorMessageException {
+        return database.getAllActuallCars();
+    }
+
+    public List<Car> getAllAArchivalCars() throws ErrorMessageException {
+        return database.getAllAArchivalCars();
+    }
+
 
     /**
      * This function add bike to table named 'bikes', which contains all bikes in company
@@ -107,8 +186,28 @@ public class Model {
      * @param pricePerDay
      * @return Return true if was added properly, otherwise false
      */
-    public boolean addBike(String id, String name, int course, String typeOfBike, String color, int tireWidth, int sizeOfWheele, int pricePerDay) {
-        return database.addBike("actual", id, name, course, typeOfBike, color, tireWidth, sizeOfWheele, pricePerDay);
+    public boolean addBike(String id, String name, int course, String typeOfBike, String color, int tireWidth, int sizeOfWheele, int pricePerDay) throws ErrorMessageException {
+        return database.addBike( id, name, course, typeOfBike, color, tireWidth, sizeOfWheele, pricePerDay);
+    }
+
+    public Bike getbikeByID(String bikeID) throws ErrorMessageException {
+        return database.getbikeByID(bikeID);
+    }
+
+    public List<Bike> getAllAvaiableBikes() throws ErrorMessageException {
+        return database.getAllAvaiableBikes();
+    }
+
+    public List<Bike> getAllABorrowedBikes() throws ErrorMessageException {
+        return database.getAllABorrowedBikes();
+    }
+
+    public List<Bike> getAllActuallBikes() throws ErrorMessageException {
+        return database.getAllActuallBikes();
+    }
+
+    public List<Bike> getAllAArchivalBikes() throws ErrorMessageException {
+        return database.getAllAArchivalBikes();
     }
 
     /**
@@ -121,9 +220,30 @@ public class Model {
      * @param pricePerDay
      * @return
      */
-    public boolean addMotorcycle(String id, String name, int course, String model, int engineCapacity, int pricePerDay) {
-        return database.addMotorcycle("actual", id, name, course, model, engineCapacity, pricePerDay);
+    public boolean addMotorcycle(String id, String name, int course, String model, int engineCapacity, int pricePerDay) throws ErrorMessageException {
+        return database.addMotorcycle(id, name, course, model, engineCapacity, pricePerDay);
     }
+
+    public Motorcycle getMotorcycleByID(String motorcycleID) throws ErrorMessageException {
+        return database.getMotorcycleByID(motorcycleID);
+    }
+
+    public List<Motorcycle> getAllAvaiableMotorcycles() throws ErrorMessageException {
+        return database.getAllAvaiableMotorcycles();
+    }
+
+    public List<Motorcycle> getAllABorrowedMotorcycles() throws ErrorMessageException {
+        return database.getAllABorrowedMotorcycles();
+    }
+
+    public List<Motorcycle> getAllActuallMotorcycles() throws ErrorMessageException {
+        return database.getAllActuallMotorcycles();
+    }
+
+    public List<Motorcycle> getAllAArchivalMotorcycles() throws ErrorMessageException {
+        return database.getAllAArchivalMotorcycles();
+    }
+
 
     /**
      * Return of vehicle. It change status of returnet car to available, add archival rents, and calculate onece again clients payments
@@ -131,84 +251,16 @@ public class Model {
      * @param penalty use this parameter when user returned crashed car
      * @return
      */
-    public boolean returnVehicle(int rentID, int penalty){
+    public boolean returnVehicle(int rentID, int penalty) throws ErrorMessageException {
         Rent rent = database.getRentByRentID(rentID);
-        addArchivalRent(rent, penalty);
-        switch (rent.getTypeOfVehicle()){
-            case 1:
-                addArchivalVehicle((Car)rent.getVehicle());
-                break;
-            case 2:
-                addArchivalVehicle((Bike)rent.getVehicle());
-                break;
-            case 3:
-                addArchivalVehicle((Motorcycle)rent.getVehicle());
-                break;
-        }
-        int priceForRent = rent.getPriceForRent() + additionalPayment(rent) + penalty;
-        addArchivalClient(rent.getClient());
-        database.deleteRentFromActualRents(rentID);
-        database.setVehicleAccessible(rent.getVehicle().getId(), rent.getTypeOfVehicle());
-        database.updateClientSumPaid(rent.getClient().getPesel(), priceForRent);
+        database.setRentAsArchival(rentID);
+        database.setVehicleAccessible(rent.getVehicle().getId(), getTypeOfVehicle(rent.getVehicle()));
+
+        int totalPriceForRent = rent.getPriceForRent() + additionalPayment(rent) + penalty;
+        database.updateRentPrice(rentID,  totalPriceForRent);
+
+        database.updateClientSumPaid(rent.getClient().getPesel(), rent.getClient().getSumPaidForAllRents() + totalPriceForRent);
         return true;
-    }
-
-    /**
-     *
-     * @return List of all clients in database
-     */
-    public List<Client> getAllClients() {
-        try {
-            return database.getAllClients("actual");
-        } catch(Exception e){
-            Logs.logger.warning("Error when try to get all clients");
-            Logs.logger.warning(e.getMessage());
-            return new ArrayList<Client>();
-        }
-    }
-
-    /**
-     *
-     * @param clientPesel
-     * @return all not returned vehicles rented by client
-     */
-    public List<Rent> getClientActualRents(String clientPesel){
-      return database.getClientActualRents(clientPesel);
-    }
-
-    /**
-     *
-     * @param clientPesel
-     * @return all returned vehicles rented by client
-     */
-    public List<Rent> getClientArchivalRents(String clientPesel){
-        return database.getClientArchivalRents(clientPesel);
-    }
-
-    /**
-     *
-     * @return all not returned vehicles
-     */
-    public List<Rent> getAllActualRents() {
-        try {
-            return database.getAllActualRents();
-        } catch(Exception e){
-            return new ArrayList<Rent>();
-        }
-    }
-
-    /**
-     *
-     * @return all returned vehicles
-     */
-    public List<Rent> getAllArchivalRents() {
-        try {
-            return database.getAllArchivalRents();
-        } catch(Exception e){
-            Logs.logger.warning("Error when try to get all archival rents");
-            Logs.logger.warning(e.getMessage());
-            return new ArrayList<Rent>();
-        }
     }
 
     /**
@@ -224,7 +276,6 @@ public class Model {
         return percentOfDiscount;
     }
 
-
     /**
      *
      * @param vehicle
@@ -232,11 +283,30 @@ public class Model {
      * @param dateOfReturn
      * @return
      */
-    private int calculatePriceForRent(Client client, Vehicle vehicle, String dateOfRental, String dateOfReturn){
-        int pricePerDay = database.getPricePerDayOfVehicle(vehicle);
+    public int calculatePriceForRent(Client client, Vehicle vehicle, String dateOfRental, String dateOfReturn) throws ErrorMessageException {
+        int pricePerDay = database.getPricePerDayOfVehicle(vehicle.getId(), getTypeOfVehicle(vehicle));
         int discount = getClientPercentOfDiscount(client);
         long days = countDays(dateOfRental, dateOfReturn);
-        return Math.round((days * pricePerDay) * (100 - discount)) ;
+        int percentDiscountPricePerDay = ((100 - discount) % 100);
+
+
+        System.out.println(days + " " + discount + " " + pricePerDay + " " +  ((100 - discount)%100));
+        if(percentDiscountPricePerDay == 0)
+            return Math.round(days * pricePerDay);
+        else
+            return Math.round((days * pricePerDay) * percentDiscountPricePerDay/100);
+    }
+
+    public boolean addEmployee(String firstName, String lastName, int phoneNumber) throws ErrorMessageException {
+        return database.addEmployee(firstName, lastName, phoneNumber);
+    }
+
+    public List<Employee> getAllEmployees() throws ErrorMessageException {
+        return database.getAllEmployees();
+    }
+
+    public Employee getEmployeeById(int id) throws ErrorMessageException {
+        return database.getEmployeeByID(id);
     }
 
     /**
@@ -258,7 +328,7 @@ public class Model {
             Logs.logger.warning(e.getMessage());
             return 0;
         }
-        return diff;
+        return diff + 1;
     }
 
     /**
@@ -269,102 +339,6 @@ public class Model {
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");
         Date date = new Date();
         return sdf.format(date);
-    }
-
-    /**
-     * Add ended rent to database archiwum
-     * @param rent
-     * @param priceForRent calculeted once again after returned car by client
-     * @return true if added properly, otherwise false
-     */
-    private boolean addArchivalRent(Rent rent, int priceForRent) {
-        String clientPesel = rent.getClient().getPesel();
-        String vehicleID = rent.getVehicle().getId();
-        int type_of_vehicle = rent.getTypeOfVehicle();
-        String dateOfRental = rent.getDateOfRental();
-        String dateOfReturn = getDate();
-        return database.addArchivalRent(clientPesel, vehicleID, type_of_vehicle, priceForRent, dateOfRental, dateOfReturn);
-    }
-
-    /**
-     * Add client to archiwum, needed for archval rents
-     * @param client
-     * @return true if added properly, otherwise false
-     */
-    private boolean addArchivalClient(Client client){
-        if(!database.isClientExist(client.getPesel())){
-            String firstName = client.getFirstName();
-            String lastName = client.getLastName();
-            int age = client.getAge();
-            int phoneNumber = client.getPhoneNumber();
-            String address = client.getAddress();
-            String pesel = client.getPesel();
-            return database.addClient("archival", pesel, firstName, lastName, age, phoneNumber, address);
-        }
-        else
-            return true;
-    }
-
-    /**
-     * Add car to archiwum, needed for archval rents
-     * @param car
-     * @return true if added properly, otherwise false
-     */
-    private boolean addArchivalVehicle(Car car){
-        if(!database.isVehicleExists(car.getId(), 1)) {
-            String carID = car.getId();
-            String name = car.getName();
-            int course = car.getCourse();
-            String model = car.getModel();
-            Fuel fuel = car.getFuel();
-            int engineCapacity = car.getEngineCapacity();
-            int trunkCapacity = car.getTrunkCapacity();
-            int numberOfDoors = car.getNumberOfDoors();
-            int pricePerDay = car.getPricePerDay();
-            return database.addCar("archival", carID, name, course, model, fuel, engineCapacity, trunkCapacity, numberOfDoors, pricePerDay);
-        }
-        else
-            return true;
-        }
-
-    /**
-     * Add bike to archiwum, needed for archval rents
-     * @param bike
-     * @return true if added properly, otherwise false
-     */
-    private boolean addArchivalVehicle(Bike bike){
-        if(!database.isVehicleExists(bike.getId(), 2)) {
-            String bikeID = bike.getId();
-            String name = bike.getName();
-            int course = bike.getCourse();
-            String typeOfBike = bike.getTypeOfBike();
-            String color = bike.getColor();
-            int tireWidth = bike.getTireWidth();
-            int sizeOfWheele = bike.getSizeOfWheele();
-            int price_per_day = bike.getPricePerDay();
-            return database.addBike("archival", bikeID, name, course, typeOfBike, color, tireWidth, sizeOfWheele, price_per_day);
-        }
-        else
-            return true;
-        }
-
-    /**
-     * Add motorcycle to archiwum, needed for archval rents
-     * @param motorcycle
-     * @return true if added properly, otherwise false
-     */
-    private boolean addArchivalVehicle(Motorcycle motorcycle){
-       if(!database.isVehicleExists(motorcycle.getId(), 3)) {
-           String motorcycleID = motorcycle.getId();
-           String name = motorcycle.getName();
-           int course = motorcycle.getCourse();
-           String model = motorcycle.getModel();
-           int engineCapacity = motorcycle.getEngineCapacity();
-           int pricePerDay = motorcycle.getPricePerDay();
-           return database.addMotorcycle("archival", motorcycleID, name, course, model, engineCapacity, pricePerDay);
-       }
-       else
-           return true;
     }
 
     /**
@@ -382,5 +356,25 @@ public class Model {
         else
             return (int)Math.round((rent.getVehicle().getPricePerDay() + (rent.getVehicle().getPricePerDay() * 0.1)) * (int)days);
         // Jezeli klient nie oddał w okraślonym terminie doliczamy karę za kazdy dzien w wysokośći 10% stawki dziennej
+    }
+
+    private int getTypeOfVehicle(Vehicle vehicle){
+        if (vehicle instanceof Car)
+            return 1;
+        else if(vehicle instanceof Bike)
+            return 2;
+        else
+            return 3;
+    }
+
+
+    public void closeConnection(){
+        database.closeConnection();
+    }
+
+
+    //For test only
+    public void discount(String pesel,int paid) throws ErrorMessageException {
+        database.updateClientSumPaid(pesel, paid);
     }
 }

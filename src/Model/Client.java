@@ -24,9 +24,7 @@ public class Client {
      * @throws UnknownClientTypeException
      * @throws WrongPeselException
      */
-    public Client(String pesel, String firstName, String lastName, int age, int phoneNumber, String address, int sumPaidForAllRents) throws WrongPeselException {
-        if (pesel.length() != 11)
-            throw new WrongPeselException();
+    public Client(String pesel, String firstName, String lastName, int age, int phoneNumber, String address, int sumPaidForAllRents) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
