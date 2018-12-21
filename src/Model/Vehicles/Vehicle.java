@@ -1,59 +1,49 @@
 package Model.Vehicles;
 
+import Model.CustomEnumValues.Color;
+import Model.CustomEnumValues.VehicleStatus;
+import Model.CustomEnumValues.VehicleType;
+
 public abstract class Vehicle {
     private final String id;
+    private final VehicleStatus vehicleStatus;
+    private final VehicleType vehicleType;
     private final String name;
-    private final int course; // przebieg pojazdu w km
-    private final boolean availability;
-    private final int pricePerDay;
+    private final double dailyPrice;
+    private final Color color;
+    private final int productionYear;
 
-    /**
-     * Basic abstract class all of vehicles
-     * @param id KEY in database, is like EL "3D33"
-     * @param name
-     * @param course
-     * @param availability
-     * @param pricePerDay
-     */
-    Vehicle(String id, String name, int course, boolean availability, int pricePerDay) {
+    public Vehicle(String id, VehicleStatus vehicleStatus, VehicleType vehicleType, String name, double dailyPrice, Color color, int productionYear) {
         this.id = id;
+        this.vehicleStatus = vehicleStatus;
+        this.vehicleType = vehicleType;
         this.name = name;
-        this.course = course;
-        this.availability = availability;
-        this.pricePerDay = pricePerDay;
-    }
-
-    public String getId() {
-        return id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public int getCourse() {
-        return course;
-    }
-
-    /**
-     * Is possible to rent a vehicle
-     * @return true is vehicle can be rent, otherwise flase
-     */
-    public boolean isAvailability() {
-        return availability;
-    }
-
-    public int getPricePerDay() {
-        return pricePerDay;
+        this.dailyPrice = dailyPrice;
+        this.color = color;
+        this.productionYear = productionYear;
     }
 
     @Override
     public String toString() {
-   String string = "id = " + this.id +
-                   ", nazwa = " + this.name +
-                   ", przebieg = " + this.course +
-                   ", dostepnosc = "  + this.availability +
-                   ", cena za dzien = " + this.pricePerDay;
-    return string;
+   return  "id = " + this.id +
+           ", nazwa = " + this.name +
+           ", kolor = " + this.color +
+           ", rok produkcji = " + this.productionYear +
+           ", dostepnosc = "  + this.vehicleStatus.toString() +
+           ", cena za dzien = " + this.dailyPrice;
     }
+
+    public String getId() {
+        return this.id;
+    }
+    public VehicleStatus getVehicleStatus() { return this.vehicleStatus; }
+    public VehicleType getVehicleType() { return this.vehicleType; }
+    public String getName() {
+        return this.name;
+    }
+    public double getDailyPrice() {
+        return this.dailyPrice;
+    }
+    public Color getColor() { return this.color; }
+    public int getProductionYear() { return this.productionYear; }
 }

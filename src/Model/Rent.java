@@ -1,78 +1,62 @@
 package Model;
 
+import Model.CustomEnumValues.VehicleType;
 import Model.Vehicles.Bike;
 import Model.Vehicles.Car;
 import Model.Vehicles.Vehicle;
 
 public class Rent {
     private final int rentID;
-    private final Client client;
     private Vehicle vehicle;
-    private final int priceForRent;
-    private final String dateOfRental;
-    private final String dateOfReturn;
+    private final Customer customer;
     private final Employee employee ;
+    private final String startDate;
+    private final String endDate;
+    private final double totalPrice;
 
-    public Rent(Vehicle vehicle, Client client, Employee employee, int rentID, int priceForRent, String dateOfRental, String dateOfReturn) {
-        this.vehicle = vehicle;
-        this.client = client;
+
+    public Rent(Vehicle vehicle, Customer customer, Employee employee, int rentID, double totalPrice, String startDate, String endDate) {
         this.rentID = rentID;
-        this.priceForRent = priceForRent;
-        this.dateOfRental = dateOfRental;
-        this.dateOfReturn = dateOfReturn;
+        this.vehicle = vehicle;
+        this.customer = customer;
         this.employee = employee;
-    }
-
-    public Vehicle getVehicle() {
-        return this.vehicle;
-    }
-
-    public int getTypeOfVehicle() {
-        if(this.vehicle instanceof Car)
-            return 1;
-        if(this.vehicle instanceof Bike)
-            return 2;
-        return 3;
-    }
-
-    public Client getClient() {
-        return client;
-    }
-
-    public int getRentID() {
-        return rentID;
+        this.totalPrice = totalPrice;
+        this.startDate = startDate;
+        this.endDate = endDate;
     }
 
     @Override
     public String toString() {
         return "Wypożyczenie{" +
-            this.getNameOfVehicle() + " = " + this.vehicle.toString() +
-            ", klient = " + this.client.toString() +
-            ", koszt wypożyczenia = " + priceForRent +
-            ", data wypożyczenia = " + this.dateOfRental +
-            ", planowana data zwrotu = " + this.dateOfReturn +
-            '}';
-        }
-
-    public int getPriceForRent() {
-        return priceForRent;
+                this.getNameOfVehicle() + " = " + this.vehicle.toString() +
+                ", klient = " + this.customer.toString() +
+                ", koszt wypożyczenia = " + totalPrice +
+                ", data wypożyczenia = " + this.startDate +
+                ", planowana data zwrotu = " + this.endDate +
+                '}';
     }
 
-    /**
-     *
-     * @return Date of rental in format dd-MM-yyyy
-     */
-    public String getDateOfRental() {
-        return dateOfRental;
+    public VehicleType getTypeOfVehicle() {
+        return vehicle.getVehicleType();
     }
 
-    /**
-     *
-     * @return Date of return vehicle in format dd-MM-yyyy
-     */
-    public String getDateOfReturn() {
-        return dateOfReturn;
+    public Customer getCustomer() { return customer; }
+    public Vehicle getVehicle() {
+        return this.vehicle;
     }
+    public int getRentID() {
+        return rentID;
+    }
+    public double getPriceForRent() {
+        return totalPrice;
+    }
+    public String getStartDate() {
+        return startDate;
+    }
+    public String getEndDate() {
+        return endDate;
+    }
+    public int getEmployeeID(){ return this.employee.getUUID(); }
 
     private String getNameOfVehicle() {
         if(this.vehicle instanceof Car)
@@ -82,7 +66,4 @@ public class Rent {
         return "Motocykl";
     }
 
-    public int getEmployeeID(){
-        return this.employee.getId();
-    }
 }

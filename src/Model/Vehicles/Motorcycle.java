@@ -1,39 +1,35 @@
 package Model.Vehicles;
 
+import Model.CustomEnumValues.Color;
+import Model.CustomEnumValues.VehicleStatus;
+import Model.CustomEnumValues.VehicleType;
+
 public class Motorcycle extends Vehicle {
-    private final String model;
-    private final int engineCapacity; // pojemność slinka
+    private final int mileage;
+    private final double engineCapacity; //pojemność slinka
+    private final double fuelUsage;
 
-    /**
-     *
-     * @param id KEY in database, is like EL "3D33"
-     * @param name
-     * @param course
-     * @param availability
-     * @param model
-     * @param engineCapacity
-     * @param pricePerDay
-     */
-    public Motorcycle(String id, String name, int course, boolean availability, String model, int engineCapacity, int pricePerDay) {
-        super(id, name, course, availability, pricePerDay);
+
+
+    public Motorcycle(String id, VehicleStatus vehicleStatus, VehicleType vehicleType, String name, double dailyPrice,
+                      Color color, int productionYear, int mileage, double engineCapacity, double fuelUsage) {
+        super(id, vehicleStatus, vehicleType, name, dailyPrice, color, productionYear);
+        this.mileage = mileage;
         this.engineCapacity = engineCapacity;
-        this.model = model;
-    }
-
-    public int getEngineCapacity() {
-        return engineCapacity;
-    }
-
-    public String getModel() {
-        return model;
+        this.fuelUsage = fuelUsage;
     }
 
     @Override
     public String toString() {
         return "{" +
                 super.toString() +
-                ", model = " + model +
-                ", pojemność silnika = " + engineCapacity +
+                ", przejechane kilometry = " + this.mileage +
+                ", pojemność silnika = " + this.engineCapacity +
+                ", zużycie paliwa = " + this.fuelUsage +
                 '}';
     }
+
+    public int getMileage() { return this.mileage; }
+    public double getEngineCapacity() { return this.engineCapacity; }
+    public double getFuelUsage() { return this.fuelUsage; }
 }

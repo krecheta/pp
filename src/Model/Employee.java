@@ -1,38 +1,40 @@
 package Model;
 
 public class Employee {
-    private final int id;
+    private final int UUID;
     private final String firstName;
     private final String lastName;
-    private final int phone_number;
+    private final String address;
+    private final int phoneNumber;
+    private final String email;
+    //login haslo
 
-    public Employee(int id, String firstName, String lastName, int phone_number) {
-        this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
-        this.phone_number = phone_number;
-    }
+
 
     @Override
     public String toString() {
-        return "Imie = " + firstName +
-                ", nazwisko = " + lastName +
-                 ", numer telefonu = " + phone_number;
+        return   "{UUID = " + this.UUID +
+                ", imię = " + this.firstName +
+                ", nazwisko = " + this.lastName +
+                ", numer telefonu = " + this.phoneNumber +
+                ", adres = " + this.address +
+                ", email = " + this.email +
+                '}';
     }
 
-    public String getFirstName() {
-        return firstName;
+    public Employee(int UUID, String firstName, String lastName, String address, int phoneNumber, String email) {
+        this.UUID = UUID;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
+        this.email = email;
     }
 
-    public String getLastName() {
-        return lastName;
-    }
-
-    public int getPhone_number() {
-        return phone_number;
-    }
-
-    public int getId() {
-        return id;
-    }
+    public int getUUID() {return this.UUID; }
+    public String getFirstName() { return this.firstName; }
+    public String getLastName() { return this.lastName; }
+    public String getAddress() { return this.address; }
+    public int getPhoneNumber() { return this.phoneNumber;}
+    public String getEmail() { return this.email; }
 }

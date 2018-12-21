@@ -1,67 +1,45 @@
 package Model.Vehicles;
 
-import Model.CustomEnumValues.Fuel;
+import Model.CustomEnumValues.Color;
+import Model.CustomEnumValues.FuelType;
+import Model.CustomEnumValues.VehicleStatus;
+import Model.CustomEnumValues.VehicleType;
 
 public class Car extends Vehicle {
+    private final int mileage;
+    private final double engineCapacity; //pojemność slinka
+    private final FuelType fuelType;
+    private final double fuelUsage;
+    private final int numberOffPersons;
 
-    private final String model;
-    private final Fuel fuel;
-    private final int engineCapacity; //pojemność slinka
-    private final int trunkCapacity; //pojemność bagażnika
-    private final int numberOfDoors;
-
-    /**
-     *
-     * @param id KEY in database, is like EL "3D33"
-     * @param name
-     * @param course
-     * @param availability
-     * @param model
-     * @param fuel type of fuel is it petrol or diesel
-     * @param engineCapacity
-     * @param trunkCapacity
-     * @param numberOfDoors
-     * @param pricePerDay
-     */
-    public Car(String id, String name, int course, boolean availability, String model, Fuel fuel, int engineCapacity, int trunkCapacity, int numberOfDoors, int pricePerDay) {
-        super(id, name, course, availability, pricePerDay);
-        this.model = model;
-        this.fuel = fuel;
+    public Car(String id, VehicleStatus vehicleStatus, VehicleType vehicleType, String name, double dailyPrice,
+               Color color, int productionYear, int mileage, double engineCapacity, double fuelUsage, FuelType fuelType,
+               int numberOffPersons) {
+        super(id, vehicleStatus, vehicleType, name, dailyPrice, color, productionYear);
+        this.mileage = mileage;
         this.engineCapacity = engineCapacity;
-        this.trunkCapacity = trunkCapacity;
-        this.numberOfDoors = numberOfDoors;
-    }
-
-    public String getModel() {
-        return model;
-    }
-
-    public Fuel getFuel() {
-        return fuel;
-    }
-
-    public int getEngineCapacity() {
-        return engineCapacity;
-    }
-
-    public int getTrunkCapacity() {
-        return trunkCapacity;
-    }
-
-    public int getNumberOfDoors() {
-        return numberOfDoors;
+        this.fuelUsage = fuelUsage;
+        this.fuelType = fuelType;
+        this.numberOffPersons = numberOffPersons;
     }
 
     @Override
     public String toString() {
         return "{" +
             super.toString() +
-            ", model = " + model +
-            ", paliwo = " + fuel +
-            ", pojemność silnika = " + engineCapacity +
-            ", pojemność bagażnika = " + trunkCapacity +
-            ", liczba drzwi = " + numberOfDoors +
+            ", paliwo = " + this.fuelType +
+            ", pojemność silnika = " + this.engineCapacity +
+            ", przejechane kilometry = " + this.mileage +
+                ", zużycie paliwa = " + this.fuelUsage +
+            ", liczba osób = " + this.numberOffPersons+
             '}';
     }
+
+    public int getMileage() {return this.mileage; }
+    public double getEngineCapacity() { return this.engineCapacity; }
+    public double getFuelUsage() { return this.fuelUsage; }
+    public FuelType getFuelType() { return this.fuelType; }
+    public int getNumberOffPersons() { return this.numberOffPersons; }
+
 }
 
