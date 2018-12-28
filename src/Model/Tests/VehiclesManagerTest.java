@@ -16,6 +16,7 @@ import Model.Vehicles.Vehicle;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -50,7 +51,6 @@ class VehiclesManagerTest {
         String response4 = "{id = b, nazwa = nameCar2, kolor = zielony, rok produkcji = 2000, dostepnosc = avaiable, cena za dzien = 1111.0, paliwo = diesel, pojemność silnika = 1.9, przejechane kilometry = 2999998, zużycie paliwa = 5.7, liczba osób = 5}";
         String response5 = "{id = d, nazwa = bike2, kolor = zielony, rok produkcji = 2000, dostepnosc = avaiable, cena za dzien = 1111.11}";
         String response6 = "{id = f, nazwa = XXX19192, kolor = zielony, rok produkcji = 2000, dostepnosc = avaiable, cena za dzien = 1111.01, przejechane kilometry = 300000, pojemność silnika = 2.5, zużycie paliwa = 9.9}";
-
 
         vehiclesManager.addVehicle(car1);
         vehiclesManager.addVehicle(car2);
@@ -152,7 +152,6 @@ class VehiclesManagerTest {
         Motorcycle motorcycl11 = new Motorcycle("e",  VehicleStatus.avaiable,VehicleType.motorcycle,"XXX19191", 1111.01, Color.zielony, 2000, 300000, 2.5,9.9);
         Motorcycle motorcycl22 = new Motorcycle("f",  VehicleStatus.avaiable,VehicleType.motorcycle,"XXX19192", 1111.01, Color.zielony, 2000, 300000, 2.5,9.9);
 
-
         String response1 = "{id = a, nazwa = nameCar1, kolor = zielony, rok produkcji = 2000, dostepnosc = avaiable, cena za dzien = 1111.0, paliwo = diesel, pojemność silnika = 1.9, przejechane kilometry = 2999998, zużycie paliwa = 5.7, liczba osób = 5}";
         String response2 = "{id = b, nazwa = nameCar2, kolor = zielony, rok produkcji = 2000, dostepnosc = avaiable, cena za dzien = 1111.0, paliwo = diesel, pojemność silnika = 1.9, przejechane kilometry = 2999998, zużycie paliwa = 5.7, liczba osób = 5}";
         String response3 = "{id = c, nazwa = bike1, kolor = zielony, rok produkcji = 2000, dostepnosc = avaiable, cena za dzien = 1111.11}";
@@ -216,6 +215,80 @@ class VehiclesManagerTest {
     }
 
     @Test
-    void getFilteredVehicles() {
+    void getFilteredVehicles() throws ErrorMessageException {
+        Car car1 = new Car("a", VehicleStatus.avaiable, VehicleType.car,"nameCar1", 1111, Color.zielony, 2000, 2999998, 1.9, 5.7, FuelType.diesel,5);
+        Car car2 = new Car("b", VehicleStatus.avaiable, VehicleType.car,"nameCar2", 2000, Color.zielony, 2000, 2999998, 1.9, 5.7, FuelType.diesel,4);
+        Bike bike1 = new Bike("c",  VehicleStatus.avaiable, VehicleType.bike, "bike1", 1000, Color.zielony, 2000);
+        Bike bike2 = new Bike("d",  VehicleStatus.avaiable, VehicleType.bike, "bike2", 999, Color.zielony, 2000);
+        Motorcycle motorcycl1 = new Motorcycle("e",  VehicleStatus.avaiable,VehicleType.motorcycle,"XXX19191", 500, Color.zielony, 2000, 300000, 2.5,9.9);
+        Motorcycle motorcycl2 = new Motorcycle("f",  VehicleStatus.avaiable,VehicleType.motorcycle,"XXX19192", 300, Color.zielony, 2000, 300000, 2.5,9.9);
+        vehiclesManager.addVehicle(car1);
+        vehiclesManager.addVehicle(car2);
+        vehiclesManager.addVehicle(bike1);
+        vehiclesManager.addVehicle(bike2);
+        vehiclesManager.addVehicle(motorcycl1);
+        vehiclesManager.addVehicle(motorcycl2);
+        vehiclesManager.archiveVehicle(car1);
+        vehiclesManager.archiveVehicle(bike1);
+        vehiclesManager.archiveVehicle(motorcycl1);
+
+        List<Vehicle> vehicleList = new ArrayList<>();
+        vehicleList =  vehiclesManager.getFilteredVehicles("nameCar", null, null, null,-1,-1,
+                        null, null, -1, -1,
+                        null, null, -1, -1, null,
+                        null, -1, -1,null,
+                        null,null, -1, -1, -1);
+        assertEquals(2, vehicleList.size());
+        assertEquals(true,  vehicleList.get(0) instanceof Car);
+        assertEquals(true,  vehicleList.get(1) instanceof Car);
+
+
+        vehicleList =  vehiclesManager.getFilteredVehicles("nameCar", null, null, null,-1,-1,
+                null, null, -1, -1,
+                null, null, -1, -1, null,
+                null, -1, -1,null,
+                null,null, -1, -1, 4);
+        assertEquals(1, vehicleList.size());
+        assertEquals(true,  vehicleList.get(0) instanceof Car);
+
+
+        vehicleList =  vehiclesManager.getFilteredVehicles(null, null, ">", null,1000,-1,
+                null, null, -1, -1,
+                null, null, -1, -1, null,
+                null, -1, -1,null,
+                null,null, -1, -1, -1);
+        assertEquals(2, vehicleList.size());
+        assertEquals(true,  vehicleList.get(0) instanceof Car);
+        assertEquals(true,  vehicleList.get(1) instanceof Car);
+
+        vehicleList =  vehiclesManager.getFilteredVehicles(null, null, "<", null,1000,-1,
+                null, null, -1, -1,
+                null, null, -1, -1, null,
+                null, -1, -1,null,
+                null,null, -1, -1, -1);
+        assertEquals(3, vehicleList.size());
+        assertEquals(true,  vehicleList.get(0) instanceof Motorcycle);
+        assertEquals(true,  vehicleList.get(1) instanceof Motorcycle);
+        assertEquals(true,  vehicleList.get(2) instanceof Bike);
+
+        vehicleList =  vehiclesManager.getFilteredVehicles(null, null, "<=", null,1000,-1,
+                null, null, -1, -1,
+                null, null, -1, -1, null,
+                null, -1, -1,null,
+                null,null, -1, -1, -1);
+        assertEquals(4, vehicleList.size());
+        assertEquals(true,  vehicleList.get(0) instanceof Motorcycle);
+        assertEquals(true,  vehicleList.get(1) instanceof Motorcycle);
+        assertEquals(true,  vehicleList.get(2) instanceof Bike);
+        assertEquals(true,  vehicleList.get(3) instanceof Bike);
+
+        vehicleList =  vehiclesManager.getFilteredVehicles(null, null, ">=", "<",1000,1500,
+                null, null, -1, -1,
+                null, null, -1, -1, null,
+                null, -1, -1,null,
+                null,null, -1, -1, -1);
+        assertEquals(2, vehicleList.size());
+        assertEquals(true,  vehicleList.get(0) instanceof Car);
+        assertEquals(true,  vehicleList.get(1) instanceof Bike);
     }
 }

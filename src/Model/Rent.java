@@ -5,17 +5,19 @@ import Model.Vehicles.Bike;
 import Model.Vehicles.Car;
 import Model.Vehicles.Vehicle;
 
+import java.util.Date;
+
 public class Rent {
     private final int rentID;
     private Vehicle vehicle;
     private final Customer customer;
     private final Employee employee ;
-    private final String startDate;
-    private final String endDate;
+    private final Date startDate;
+    private final Date endDate;
     private final double totalPrice;
 
 
-    public Rent(Vehicle vehicle, Customer customer, Employee employee, int rentID, double totalPrice, String startDate, String endDate) {
+    public Rent(Vehicle vehicle, Customer customer, Employee employee, int rentID, double totalPrice, Date startDate, Date endDate) {
         this.rentID = rentID;
         this.vehicle = vehicle;
         this.customer = customer;
@@ -50,10 +52,10 @@ public class Rent {
     public double getPriceForRent() {
         return totalPrice;
     }
-    public String getStartDate() {
+    public Date getStartDate() {
         return startDate;
     }
-    public String getEndDate() {
+    public Date getEndDate() {
         return endDate;
     }
     public int getEmployeeID(){ return this.employee.getUUID(); }

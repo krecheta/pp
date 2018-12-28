@@ -58,7 +58,7 @@ public class CustomersManager {
         DatabaseManager.markCustomerAsArchival(peselNumber);
     }
 
-//    public List<Customer> getFilteredCustomers(String peselNumber, String firstName, String lastName) throws ErrorMessageException{
-//       return DatabaseManager.getFilteredCustomers(peselNumber, firstName, lastName);
-//    }
+    public List<Customer> getFilteredCustomers(String peselNumber, String firstName, String lastName) throws ErrorMessageException{
+       return DatabaseManager.getFilteredCustomers(peselNumber, firstName, lastName);
+    }
 }

@@ -1,11 +1,6 @@
 package DataBase;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -137,6 +132,47 @@ public class DatabaseManager  {
         return getAllCustomers("archival");
     }
 
+    public static List<Customer> getFilteredCustomers(String peselNumber, String firstName, String lastName) throws ErrorMessageException {
+        List<Customer> customers = new ArrayList<>();
+        String query = "SELECT * FROM customers  ";
+        if(!(peselNumber == null))
+            query += "where peselNumber LIKE \"%" + peselNumber + "%\" ";
+        if (!(firstName == null) && query.contains("LIKE"))
+            query += " AND firstName LIKE \"%" + firstName + "%\" ";
+        if (!(firstName == null) && !query.contains("LIKE"))
+            query += " where firstName LIKE \"%" + firstName + "%\" ";
+        if (!(lastName == null) && query.contains("LIKE"))
+            query += " AND lastName LIKE \"%" + lastName+ "%\" ";
+        if (!(lastName == null) && !query.contains("LIKE"))
+            query += " where lastName LIKE \"%" + lastName + "%\" ";
+        try {
+            ResultSet result = stat.executeQuery(query);
+            int phoneNumber;
+            String firstName_, lastName_, address, pesel, email, companyName, nipNumber, companyAddress;
+            double sumPaidForAllRents;
+            while (result.next()) {
+                pesel = result.getString("peselNumber");
+                firstName_ = result.getString("firstName");
+                lastName_ = result.getString("lastName");
+                address = result.getString("address");
+                phoneNumber = result.getInt("phoneNumber");
+                email = result.getString("email");
+                companyName = result.getString("companyName");
+                nipNumber = result.getString("nipNumber");
+                companyAddress = result.getString("companyAddress");
+                sumPaidForAllRents = result.getDouble("sum_paid_for_all_rents");
+                customers.add(new Customer(firstName_, lastName_, pesel, address, phoneNumber, email, companyName,
+                        nipNumber, companyAddress, sumPaidForAllRents));
+            }
+        } catch (SQLException e) {
+            Logs.logger.warning("Error when try to get filtered lists all customer");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Error, please contact with administrator");
+        }
+        return customers;
+    }
+
+
     public static Customer getCustomerByPesel(String peselNumber) throws  ErrorMessageException {
         ResultSet customerResult;
         int phoneNumber; double sumPaidForAllRents;
@@ -195,7 +231,8 @@ public class DatabaseManager  {
         }
     }
 
-    public static void addRent(String customerID, String vehicleID, VehicleType typeOfVehicle, double totalPrice, String startDate, String endDate, int employeeID) throws ErrorMessageException {
+    public static void addRent(String customerID, String vehicleID, VehicleType typeOfVehicle, double totalPrice, Date startDate, Date endDate, int employeeID) throws ErrorMessageException {
+        final long hours12 = 12L * 60L * 60L * 1000L;
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
                     "insert into rents(customerID, vehicleID, vehicleType, totalPrice, startDate, endDate, status, employeeID) values ( ?, ?, ?, ?, ?, ?, ?, ?);");
@@ -203,8 +240,8 @@ public class DatabaseManager  {
             prepStmt.setString(2, vehicleID);
             prepStmt.setString(3, typeOfVehicle.name());
             prepStmt.setDouble(4, totalPrice);
-            prepStmt.setString(5, startDate);
-            prepStmt.setString(6, endDate);
+            prepStmt.setDate(5, new Date(startDate.getTime() + hours12));
+            prepStmt.setDate(6, new Date(endDate.getTime() + hours12));
             prepStmt.setString(7, RentStatus.during.name());
             prepStmt.setInt(8, employeeID);
             prepStmt.execute();
@@ -226,10 +263,10 @@ public class DatabaseManager  {
             throw new ErrorMessageException("Error, please contact with administrator");
         }
     }
-    public static void updateRentDate(int rentID, String returnDate) throws ErrorMessageException{
+    public static void updateRentDate(int rentID, Date returnDate) throws ErrorMessageException{
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
-                    "update rents set endDate =" + returnDate + " where id = " + "\"" + rentID + "\"");
+                    "update rents set endDate =\"" + returnDate + "\" where id = " + "\"" + rentID + "\"");
             prepStmt.execute();
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to update rent end date");
@@ -261,8 +298,8 @@ public class DatabaseManager  {
 
     public static Rent getRentByRentID(int rentID) throws ErrorMessageException {
         int employeeID; double priceForRent;
-        String typeOfVehicle,  dateOfRental, dateOfReturn, customerID, vehicleID;
-        Customer customer; Vehicle vehicle = null;
+        String typeOfVehicle, customerID, vehicleID;
+        Customer customer; Vehicle vehicle = null; Date dateOfRental, dateOfReturn;
         Employee employee;
         try {
             ResultSet result = stat.executeQuery("SELECT * FROM rents where id = " + "\"" + rentID  + "\"");
@@ -271,8 +308,8 @@ public class DatabaseManager  {
             vehicleID = result.getString("vehicleID");
             typeOfVehicle = result.getString("vehicleType");
             priceForRent = result.getDouble("totalPrice");
-            dateOfRental = result.getString("startDate");
-            dateOfReturn = result.getString("endDate");
+            dateOfRental = result.getDate("startDate");
+            dateOfReturn = result.getDate("endDate");
             employeeID = result.getInt("employeeID");
             employee = getEmployeeByID(employeeID);
             customer  = getCustomerByPesel(customerID);
@@ -296,6 +333,108 @@ public class DatabaseManager  {
         return new Rent(vehicle, customer, employee, rentID, priceForRent, dateOfRental, dateOfReturn);
     }
 
+    public static List<Rent> getFilteredRents(String vehicleID, String peselNumber, int employeeID, String rentTypeStartMin, String rentTypeStartMax ,Date startDateMin,
+                                        Date startDateMax, String rentTypeEndMin, String rentTypeEndMax, Date endDateMin, Date endDateMax, String costTypeMin,
+                                        String costTypeMax, double costMin, double costMax) throws  ErrorMessageException{
+
+        String query = "Select * from rents ";
+    //vehicle id
+        if (!(vehicleID == null))
+            query += "where vehicleID LIKE \"%" + vehicleID + "%\" ";
+    //pesel number
+        if (!(peselNumber == null) && !query.contains("where"))
+            query += "where customerID LIKE \"%" + peselNumber + "%\" ";
+        if (!(peselNumber == null) && query.contains("where"))
+            query += " AND customerID LIKE \"%" + peselNumber + "%\" ";
+    // employeeID
+        if (!(employeeID == -1) && !query.contains("where"))
+            query += "where employeeID=\"" + employeeID + "\" ";
+        if (!(employeeID == -1) && query.contains("where"))
+            query += " AND employeeID=\"" + employeeID + "\" ";
+
+    // rentTypeStartMin
+        if(!(rentTypeStartMin == null) && !(startDateMin == null) && !query.contains("where"))
+            query += " where startDate " + rentTypeStartMin + " \"" + startDateMin + "\" ";
+        if(!(rentTypeStartMin == null) && !(startDateMin == null) && query.contains("where"))
+            query += " AND startDate " + rentTypeStartMin + " \"" + startDateMin + "\" ";
+
+    // rentTypeStartMax
+        if(!(rentTypeStartMax == null) && !(startDateMax == null) && !query.contains("where"))
+            query += " where startDate " + rentTypeStartMax + " \"" + startDateMax + "\" ";
+        if(!(rentTypeStartMax == null) && !(startDateMax == null) && query.contains("where"))
+            query += " AND startDate " + rentTypeStartMax + " \"" + startDateMax + "\" ";
+
+    // rentTypeEndMin
+        if(!(rentTypeEndMin == null) && !(endDateMin == null) && !query.contains("where"))
+            query += " where endDate " + rentTypeEndMin + " \"" + endDateMin + "\" ";
+        if(!(rentTypeEndMin == null) && !(endDateMin == null) && query.contains("where"))
+            query += " AND endDate " + rentTypeEndMin + " \"" + endDateMin + "\" ";
+
+    // rentTypeEndMax
+        if(!(rentTypeEndMax == null) && !(endDateMax == null) && !query.contains("where"))
+            query += " where endDate " + rentTypeEndMax + " \"" + endDateMax + "\" ";
+        if(!(rentTypeEndMax == null) && !(endDateMax == null) && query.contains("where"))
+            query += " AND endDate " + rentTypeEndMax + " \"" + endDateMax + "\" ";
+
+    // priceMin
+        if(!(costTypeMin == null) && !(costMin == -1) && !query.contains("where"))
+            query += " where totalPrice " + costTypeMin + " \"" + costMin + "\" ";
+        if(!(costTypeMin == null) && !(costMin == -1) && query.contains("where"))
+            query += " AND totalPrice " + costTypeMin + " \"" + costMin + "\" ";
+
+    // priceMax
+        if(!(costTypeMax == null) && !(costMax == -1) && !query.contains("where"))
+            query += " where totalPrice " + costTypeMax + " \"" + costMax + "\" ";
+        if(!(costTypeMax == null) && !(costMax == -1) && query.contains("where"))
+            query += " AND totalPrice " + costTypeMax + " \"" + costMax + "\" ";
+        List<Rent> rent = new ArrayList<>();
+        try {
+            ResultSet result = stat.executeQuery(query);
+            int id, employeeID_; double priceForRent;
+            String typeOfVehicle, customerID, vehicleID_;
+            Employee employee; Customer customer; Vehicle vehicle= null; Date dateOfRental, dateOfReturn;
+            int x = 0;
+            int resultSize = countSizeResultSet(result);
+            result = stat.executeQuery(query);
+            result.next();
+            while(x< resultSize) {
+                for (int i=0; i<x; i++ )
+                    result.next();
+                id = result.getInt("id");
+                customerID = result.getString("customerID");
+                vehicleID_ = result.getString("vehicleID");
+                typeOfVehicle = result.getString("vehicleType");
+                priceForRent = result.getDouble("totalPrice");
+                dateOfRental = result.getDate("startDate");
+                dateOfReturn = result.getDate("endDate");
+                employeeID_ = result.getInt("employeeID");
+                employee = getEmployeeByID(employeeID_);
+                customer  = getCustomerByPesel(customerID);
+
+                switch (VehicleType.valueOf(typeOfVehicle)) {
+                    case car:
+                        vehicle = getCarByID(vehicleID_);
+                        break;
+                    case bike:
+                        vehicle = getbikeByID(vehicleID_);
+                        break;
+                    case motorcycle:
+                        vehicle = getMotorcycleByID(vehicleID_);
+                        break;
+                }
+                rent.add(new Rent(vehicle, customer, employee, id, priceForRent, dateOfRental, dateOfReturn));
+                x++;
+                result = stat.executeQuery(query);
+                result.next();
+            }
+        } catch (SQLException e) {
+            Logs.logger.warning("Error when try to get filtered rents");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Error, please contact with administrator");
+        }
+        return rent;
+
+    }
 
     public static void addCar(String id, String name, double dailyPrice, Color color, int productionYear,
                                  int mileage, double engineCapacity, double fuelUsage, FuelType fuelType,
@@ -452,6 +591,283 @@ public class DatabaseManager  {
         }
         return new Bike(bikeID, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name,dailyPrice, Color.valueOf(color), productionYear);
     }
+
+
+    public static List<Car> getFilteredCars(String name, String color, String typeOfComparePriceMin,String typeOfComparePriceMax, double minPrice, double maxPrice,
+                                            String typeOfCompareProductionYeatMin, String typeOfCompareProductionYeatMax, int minProductionYear, int maxProductionYear,
+                                            String typeOfCompareMileageMin, String typeOfCompareMileageMax, long minMileage, long maxMileage, String typeOfCompareEngineCapacityMin,
+                                            String typeOfCompareEngineCapacityMax, double minCapacity, double maxCapacity, FuelType fuelType,
+                                            String typeOfCompareFuelUsageMin, String typeOfCompareFuelUsageMax, double minFuelUsage, double maxFuelUsage, int quantityOfPerson) throws ErrorMessageException {
+        String query = "Select * from cars ";
+        if (!(name == null))
+            query += "where name LIKE \"%" + name + "%\" ";
+        if (!(color == null) && !query.contains("where"))
+            query += "where color LIKE \"%" + color + "%\" ";
+        if (!(color == null) && query.contains("where"))
+            query += " AND color LIKE \"%" + color + "%\" ";
+
+    // price min
+        if(!(typeOfComparePriceMin == null) && !(minPrice == -1) && !query.contains("where"))
+            query += " where dailyPrice " + typeOfComparePriceMin + " \"" + minPrice + "\" ";
+        if(!(typeOfComparePriceMin == null) && !(minPrice == -1) && query.contains("where"))
+            query += " AND dailyPrice " + typeOfComparePriceMin + " \"" + minPrice + "\" ";
+
+    // price max
+        if(!(typeOfComparePriceMax == null) && !(maxPrice == -1) && !query.contains("where"))
+            query += " where dailyPrice " + typeOfComparePriceMax + " \"" + maxPrice + "\" ";
+        if(!(typeOfComparePriceMax == null) && !(maxPrice == -1) && query.contains("where"))
+            query += " AND dailyPrice " + typeOfComparePriceMax + " \"" + maxPrice + "\" ";
+
+    // mileage min
+        if(!(typeOfCompareMileageMin == null) && !(minMileage == -1) && !query.contains("where"))
+            query += " where mileage " + typeOfCompareMileageMin + " \"" + minMileage + "\" ";
+        if(!(typeOfCompareMileageMin == null) && !(minMileage == -1) && query.contains("where"))
+            query += " AND mileage " + typeOfCompareMileageMin + " \"" + minMileage + "\" ";
+
+    // mileage max
+        if(!(typeOfCompareMileageMax == null) && !(maxMileage == -1) && !query.contains("where"))
+            query += " where mileage " + typeOfCompareMileageMax + " \"" + maxMileage + "\" ";
+        if(!(typeOfCompareMileageMax == null) && !(maxMileage == -1) && query.contains("where"))
+            query += " AND mileage " + typeOfCompareMileageMax + " \"" + maxMileage + "\" ";
+
+    // production year  min
+        if(!(typeOfCompareProductionYeatMin == null) && !(minProductionYear == -1) && !query.contains("where"))
+            query += " where productionYear " + typeOfCompareProductionYeatMin + " \"" + minProductionYear + "\" ";
+        if(!(typeOfCompareProductionYeatMin == null) && !(minProductionYear == -1) && query.contains("where"))
+            query += " AND productionYear " + typeOfCompareProductionYeatMin + " \"" + minProductionYear + "\" ";
+
+    // production year max
+        if(!(typeOfCompareProductionYeatMax == null) && !(maxProductionYear == -1) && !query.contains("where"))
+            query += " where productionYear " + typeOfCompareProductionYeatMax + " \"" + maxProductionYear + "\" ";
+        if(!(typeOfCompareProductionYeatMax == null) && !(maxProductionYear == -1) && query.contains("where"))
+            query += " AND productionYear " + typeOfCompareProductionYeatMax + " \"" + maxProductionYear + "\" ";
+
+    // engine capacity min
+        if(!(typeOfCompareEngineCapacityMin == null) && !(minCapacity == -1) && !query.contains("where"))
+            query += " where engineCapacity " + typeOfCompareEngineCapacityMin + " \"" + minCapacity + "\" ";
+        if(!(typeOfCompareEngineCapacityMin == null) && !(minCapacity == -1) && query.contains("where"))
+            query += " AND engineCapacity " + typeOfCompareEngineCapacityMin + " \"" + minCapacity + "\" ";
+
+    // engine capacity max
+        if(!(typeOfCompareEngineCapacityMax == null) && !(maxCapacity == -1) && !query.contains("where"))
+            query += " where engineCapacity " + typeOfCompareEngineCapacityMax + " \"" + maxCapacity + "\" ";
+        if(!(typeOfCompareEngineCapacityMax == null) && !(maxCapacity == -1) && query.contains("where"))
+            query += " AND engineCapacity " + typeOfCompareEngineCapacityMax + " \"" + maxCapacity + "\" ";
+
+    // fueltype
+        if(!(fuelType == null) && !query.contains("where"))
+            query += " where FuelType = \"" + fuelType.toString() + "\" ";
+        if(!(typeOfCompareEngineCapacityMax == null) && !(maxCapacity == -1) && query.contains("where"))
+            query += " AND FuelType= \"" +  fuelType.toString()  + "\" ";
+
+    // fuelUsage min
+        if(!(typeOfCompareFuelUsageMin == null) && !(minFuelUsage == -1) && !query.contains("where"))
+            query += " where engineCapacity " + typeOfCompareFuelUsageMin + " \"" + minFuelUsage + "\" ";
+        if(!(typeOfCompareFuelUsageMin == null) && !(minFuelUsage == -1) && query.contains("where"))
+            query += " AND engineCapacity " + typeOfCompareFuelUsageMin + " \"" + minFuelUsage + "\" ";
+
+    // fuelUsage max
+        if(!(typeOfCompareFuelUsageMax == null) && !(maxFuelUsage == -1) && !query.contains("where"))
+            query += " where fuelUsage " + typeOfCompareFuelUsageMax + " \"" + maxFuelUsage + "\" ";
+        if(!(typeOfCompareFuelUsageMax == null) && !(maxFuelUsage == -1) && query.contains("where"))
+            query += " AND fuelUsage " + typeOfCompareFuelUsageMax + " \"" + maxFuelUsage + "\" ";
+
+        if (!(quantityOfPerson == -1) && !query.contains("where"))
+            query += " where numberOffPersons=\"" + quantityOfPerson + "\" ";
+        if (!(quantityOfPerson == -1) && query.contains("where"))
+            query += " AND numberOffPersons=\"" + quantityOfPerson + "\" ";
+
+        List<Car> cars = new ArrayList<>();
+        try {
+            ResultSet result = stat.executeQuery(query);
+            int productionYear, numberOffPersons, mileage; double dailyPrice, engineCapacity,fuelUsage;
+            String id, name_, vehicleType, color_, fuelType_, vehicleStatusString;
+            while(result.next()) {
+                id = result.getString("id");
+                vehicleType = result.getString("vehicleType");
+                vehicleStatusString = result.getString("vehicleStatus");
+                name_ = result.getString("name");
+                dailyPrice = result.getDouble("dailyPrice");
+                color_ = result.getString("color");
+                productionYear = result.getInt("productionYear");
+                mileage = result.getInt("mileage");
+                engineCapacity = result.getDouble("engineCapacity");
+                fuelType_ = result.getString("FuelType");
+                fuelUsage = result.getDouble("fuelUsage");
+                numberOffPersons = result.getInt("numberOffPersons");
+
+                cars.add(new Car(id, VehicleStatus.valueOf(vehicleStatusString), VehicleType.valueOf(vehicleType), name_, dailyPrice,
+                        Color.valueOf(color_), productionYear, mileage, engineCapacity, fuelUsage, FuelType.valueOf(fuelType_),
+                        numberOffPersons));
+            }
+        } catch (SQLException e) {
+            Logs.logger.warning("Error when try to get lists all cars");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Error, please contact with administrator");
+        }
+        return cars;
+    }
+
+    public static List<Motorcycle> getFilteredMotorcycles(String name, String color, String typeOfComparePriceMin,String typeOfComparePriceMax, double minPrice, double maxPrice,
+                                            String typeOfCompareProductionYeatMin, String typeOfCompareProductionYeatMax, int minProductionYear, int maxProductionYear,
+                                            String typeOfCompareMileageMin, String typeOfCompareMileageMax, long minMileage, long maxMileage, String typeOfCompareEngineCapacityMin,
+                                            String typeOfCompareEngineCapacityMax, double minCapacity, double maxCapacity,
+                                            String typeOfCompareFuelUsageMin, String typeOfCompareFuelUsageMax, double minFuelUsage, double maxFuelUsage) throws ErrorMessageException {
+        String query = "Select * from motorcycles ";
+        if (!(name == null))
+            query += "where name LIKE \"%" + name + "%\" ";
+        if (!(color == null) && !query.contains("where"))
+            query += "where color LIKE \"%" + color + "%\" ";
+        if (!(color == null) && query.contains("where"))
+            query += " AND color LIKE \"%" + color + "%\" ";
+
+        // price min
+        if(!(typeOfComparePriceMin == null) && !(minPrice == -1) && !query.contains("where"))
+            query += " where dailyPrice " + typeOfComparePriceMin + " \"" + minPrice + "\" ";
+        if(!(typeOfComparePriceMin == null) && !(minPrice == -1) && query.contains("where"))
+            query += " AND dailyPrice " + typeOfComparePriceMin + " \"" + minPrice + "\" ";
+
+        // price max
+        if(!(typeOfComparePriceMax == null) && !(maxPrice == -1) && !query.contains("where"))
+            query += " where dailyPrice " + typeOfComparePriceMax + " \"" + maxPrice + "\" ";
+        if(!(typeOfComparePriceMax == null) && !(maxPrice == -1) && query.contains("where"))
+            query += " AND dailyPrice " + typeOfComparePriceMax + " \"" + maxPrice + "\" ";
+
+        // mileage min
+        if(!(typeOfCompareMileageMin == null) && !(minMileage == -1) && !query.contains("where"))
+            query += " where mileage " + typeOfCompareMileageMin + " \"" + minMileage + "\" ";
+        if(!(typeOfCompareMileageMin == null) && !(minMileage == -1) && query.contains("where"))
+            query += " AND mileage " + typeOfCompareMileageMin + " \"" + minMileage + "\" ";
+
+        // mileage max
+        if(!(typeOfCompareMileageMax == null) && !(maxMileage == -1) && !query.contains("where"))
+            query += " where mileage " + typeOfCompareMileageMax + " \"" + maxMileage + "\" ";
+        if(!(typeOfCompareMileageMax == null) && !(maxMileage == -1) && query.contains("where"))
+            query += " AND mileage " + typeOfCompareMileageMax + " \"" + maxMileage + "\" ";
+
+        // production year  min
+        if(!(typeOfCompareProductionYeatMin == null) && !(minProductionYear == -1) && !query.contains("where"))
+            query += " where productionYear " + typeOfCompareProductionYeatMin + " \"" + minProductionYear + "\" ";
+        if(!(typeOfCompareProductionYeatMin == null) && !(minProductionYear == -1) && query.contains("where"))
+            query += " AND productionYear " + typeOfCompareProductionYeatMin + " \"" + minProductionYear + "\" ";
+
+        // production year max
+        if(!(typeOfCompareProductionYeatMax == null) && !(maxProductionYear == -1) && !query.contains("where"))
+            query += " where productionYear " + typeOfCompareProductionYeatMax + " \"" + maxProductionYear + "\" ";
+        if(!(typeOfCompareProductionYeatMax == null) && !(maxProductionYear == -1) && query.contains("where"))
+            query += " AND productionYear " + typeOfCompareProductionYeatMax + " \"" + maxProductionYear + "\" ";
+
+        // engine capacity min
+        if(!(typeOfCompareEngineCapacityMin == null) && !(minCapacity == -1) && !query.contains("where"))
+            query += " where engineCapacity " + typeOfCompareEngineCapacityMin + " \"" + minCapacity + "\" ";
+        if(!(typeOfCompareEngineCapacityMin == null) && !(minCapacity == -1) && query.contains("where"))
+            query += " AND engineCapacity " + typeOfCompareEngineCapacityMin + " \"" + minCapacity + "\" ";
+
+        // engine capacity max
+        if(!(typeOfCompareEngineCapacityMax == null) && !(maxCapacity == -1) && !query.contains("where"))
+            query += " where engineCapacity " + typeOfCompareEngineCapacityMax + " \"" + maxCapacity + "\" ";
+        if(!(typeOfCompareEngineCapacityMax == null) && !(maxCapacity == -1) && query.contains("where"))
+            query += " AND engineCapacity " + typeOfCompareEngineCapacityMax + " \"" + maxCapacity + "\" ";
+
+    // fuelUsage min
+        if(!(typeOfCompareFuelUsageMin == null) && !(minFuelUsage == -1) && !query.contains("where"))
+            query += " where engineCapacity " + typeOfCompareFuelUsageMin + " \"" + minFuelUsage + "\" ";
+        if(!(typeOfCompareFuelUsageMin == null) && !(minFuelUsage == -1) && query.contains("where"))
+            query += " AND engineCapacity " + typeOfCompareFuelUsageMin + " \"" + minFuelUsage + "\" ";
+
+    // fuelUsage max
+        if(!(typeOfCompareFuelUsageMax == null) && !(maxFuelUsage == -1) && !query.contains("where"))
+            query += " where fuelUsage " + typeOfCompareFuelUsageMax + " \"" + maxFuelUsage + "\" ";
+        if(!(typeOfCompareFuelUsageMax == null) && !(maxFuelUsage == -1) && query.contains("where"))
+            query += " AND fuelUsage " + typeOfCompareFuelUsageMax + " \"" + maxFuelUsage + "\" ";
+
+        List<Motorcycle> motorcycles = new ArrayList<>();
+        try {
+            ResultSet result = stat.executeQuery(query);
+            double dailyPrice, fuelUsage, engineCapacity; int productionYear, mileage;
+            String id, name_, vehicleType, color_, vehicleStatus;
+            while(result.next()) {
+                id = result.getString("id");
+                vehicleType = result.getString("vehicleType");
+                name_ = result.getString("name");
+                vehicleStatus = result.getString("vehicleStatus");
+                dailyPrice = result.getDouble("dailyPrice");
+                color_ = result.getString("color");
+                productionYear = result.getInt("productionYear");
+                mileage = result.getInt("mileage");
+                engineCapacity = result.getDouble("engineCapacity");
+                fuelUsage = result.getDouble("fuelUsage");
+
+                motorcycles.add(new Motorcycle(id, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name_, dailyPrice,
+                        Color.valueOf(color_), productionYear, mileage, engineCapacity, fuelUsage));
+            }
+        } catch (SQLException e) {
+            Logs.logger.warning("Error when try to get lists all motorcycles");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Error, please contact with administrator");
+        }
+        return motorcycles;
+    }
+
+
+    public static List<Bike> getFilteredBikes(String name, String color, String typeOfComparePriceMin,String typeOfComparePriceMax, double minPrice, double maxPrice,
+                                                  String typeOfCompareProductionYeatMin, String typeOfCompareProductionYeatMax, int minProductionYear, int maxProductionYear) throws ErrorMessageException {
+        String query = "Select * from bikes ";
+        if (!(name == null))
+            query += "where name LIKE \"%" + name + "%\" ";
+        if (!(color == null) && !query.contains("where"))
+            query += "where color LIKE \"%" + color + "%\" ";
+        if (!(color == null) && query.contains("where"))
+            query += " AND color LIKE \"%" + color + "%\" ";
+
+    // price min
+        if(!(typeOfComparePriceMin == null) && !(minPrice == -1) && !query.contains("where"))
+            query += " where dailyPrice " + typeOfComparePriceMin + " \"" + minPrice + "\" ";
+        if(!(typeOfComparePriceMin == null) && !(minPrice == -1) && query.contains("where"))
+            query += " AND dailyPrice " + typeOfComparePriceMin + " \"" + minPrice + "\" ";
+
+    // price max
+        if(!(typeOfComparePriceMax == null) && !(maxPrice == -1) && !query.contains("where"))
+            query += " where dailyPrice " + typeOfComparePriceMax + " \"" + maxPrice + "\" ";
+        if(!(typeOfComparePriceMax == null) && !(maxPrice == -1) && query.contains("where"))
+            query += " AND dailyPrice " + typeOfComparePriceMax + " \"" + maxPrice + "\" ";
+
+    // production year  min
+        if(!(typeOfCompareProductionYeatMin == null) && !(minProductionYear == -1) && !query.contains("where"))
+            query += " where productionYear " + typeOfCompareProductionYeatMin + " \"" + minProductionYear + "\" ";
+        if(!(typeOfCompareProductionYeatMin == null) && !(minProductionYear == -1) && query.contains("where"))
+            query += " AND productionYear " + typeOfCompareProductionYeatMin + " \"" + minProductionYear + "\" ";
+
+    // production year max
+        if(!(typeOfCompareProductionYeatMax == null) && !(maxProductionYear == -1) && !query.contains("where"))
+            query += " where productionYear " + typeOfCompareProductionYeatMax + " \"" + maxProductionYear + "\" ";
+        if(!(typeOfCompareProductionYeatMax == null) && !(maxProductionYear == -1) && query.contains("where"))
+            query += " AND productionYear " + typeOfCompareProductionYeatMax + " \"" + maxProductionYear + "\" ";
+
+        List<Bike> bikes = new ArrayList<>();
+        try {
+            ResultSet result = stat.executeQuery(query);
+            int productionYear; double dailyPrice;
+            String vehicleType, name_, color_, id, vehicleStatus;
+            while(result.next()) {
+                id = result.getString("id");
+                vehicleStatus = result.getString("vehicleStatus");
+                vehicleType = result.getString("vehicleType");
+                name_ = result.getString("name");
+                dailyPrice = result.getDouble("dailyPrice");
+                color_ = result.getString("color");
+                productionYear = result.getInt("productionYear");
+
+                bikes.add(new Bike(id, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name_, dailyPrice, Color.valueOf(color_), productionYear));
+            }
+        } catch (SQLException e) {
+            Logs.logger.warning("Error when try to get lists all Bikes");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Error, please contact with administrator");
+        }
+        return bikes;
+    }
+
 
     public static List<Bike> getAllAvaiableBikes() throws ErrorMessageException{
         return getAllBikes(VehicleStatus.avaiable);
@@ -663,16 +1079,19 @@ public class DatabaseManager  {
         }
     }
 
-    public static void addEmployee(String firstName, String lastName, String address, int phoneNumber, String email) throws ErrorMessageException{
+    public static void addEmployee(String firstName, String lastName, String address, int phoneNumber, String email, String login, String password, String salt) throws ErrorMessageException{
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
-                    "insert into employees( firstName, lastName, address, phoneNumber, email, status) values (?,?,?,?,?,?);");
+                    "insert into employees( firstName, lastName, address, phoneNumber, email, status, login, password, salt) values (?,?,?,?,?,?,?,?,?);");
             prepStmt.setString(1, firstName);
             prepStmt.setString(2, lastName);
             prepStmt.setString(3, address);
             prepStmt.setInt(4, phoneNumber);
             prepStmt.setString(5, email);
             prepStmt.setInt(6, 0);
+            prepStmt.setString(7, login);
+            prepStmt.setString(8, password);
+            prepStmt.setString(9, salt);
             prepStmt.execute();
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to add employee to database");
@@ -723,6 +1142,37 @@ public class DatabaseManager  {
         return employees;
     }
 
+    public static List<Employee> getFilteredEmployees(String firstName, String lastName) throws ErrorMessageException {
+        List<Employee> employees = new ArrayList<>();
+        String firstName_, lastName_, address, email;
+        int phoneNumber, UUID ;
+
+        String query = "SELECT * FROM employees  ";
+        if (!(firstName == null))
+            query += " where  firstName LIKE \"%" + firstName + "%\" ";
+        if (!(lastName == null) && query.contains("LIKE"))
+            query += " AND lastName LIKE \"%" + lastName+ "%\" ";
+        if (!(lastName == null) && !query.contains("LIKE"))
+            query += " where lastName LIKE \"%" + lastName + "%\" ";
+        try {
+            ResultSet result = stat.executeQuery(query);
+            while (result.next()) {
+                UUID =  result.getInt("UUID");
+                firstName_ = result.getString("firstName");
+                lastName_ = result.getString("lastName");
+                address = result.getString("address");
+                phoneNumber = result.getInt("phoneNumber");
+                email = result.getString("email");
+                employees.add(new Employee(UUID, firstName_, lastName_, address, phoneNumber, email));
+            }
+        }catch(Exception e){
+            Logs.logger.warning("Error when try to get list filetred employees");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Error, please contact with administrator");
+        }
+        return employees;
+    }
+
     public static Employee getEmployeeByID(int UUID) throws ErrorMessageException{
         String firstName, lastName, address, email;
         Employee employee = null;
@@ -743,6 +1193,37 @@ public class DatabaseManager  {
             throw new ErrorMessageException("Error, please contact with administrator");
         }
         return employee;
+    }
+
+    public static String getPassword(String login) throws ErrorMessageException {
+        String password = null;
+        try {
+            ResultSet result = stat.executeQuery("SELECT * FROM employees where login =\"" + login + "\"");
+            while(result.next()) {
+                password = result.getString("password");
+            }
+
+        }catch(Exception e){
+            Logs.logger.warning("Error when try to get password by login ");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Error, please contact with administrator");
+        }
+        return password;
+    }
+
+    public static String getSalt(String login) throws ErrorMessageException {
+        String salt = null;
+        try {
+            ResultSet result = stat.executeQuery("SELECT * FROM employees where login = " + "\"" + login + "\"");
+            while(result.next()) {
+                salt = result.getString("salt");
+            }
+        }catch(Exception e){
+            Logs.logger.warning("Error when try to get salt by login ");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Error, please contact with administrator");
+        }
+        return salt;
     }
 
 
@@ -788,8 +1269,8 @@ public class DatabaseManager  {
         try {
             ResultSet result = stat.executeQuery("SELECT * FROM rents where status = \"" + rentStatus.name() + "\"");
             int id, employeeID; double priceForRent;
-            String dateOfRental, typeOfVehicle, dateOfReturn, customerID, vehicleID;
-            Employee employee; Customer customer; Vehicle vehicle= null;
+            String typeOfVehicle, customerID, vehicleID;
+            Employee employee; Customer customer; Vehicle vehicle= null; Date dateOfRental, dateOfReturn;
             int x = 0;
             int resultSize = countSizeResultSet(result);
             result = stat.executeQuery("SELECT * FROM rents where status = \"" + rentStatus.name() + "\"");
@@ -802,8 +1283,8 @@ public class DatabaseManager  {
                 vehicleID = result.getString("vehicleID");
                 typeOfVehicle = result.getString("vehicleType");
                 priceForRent = result.getDouble("totalPrice");
-                dateOfRental = result.getString("startDate");
-                dateOfReturn = result.getString("endDate");
+                dateOfRental = result.getDate("startDate");
+                dateOfReturn = result.getDate("endDate");
                 employeeID = result.getInt("employeeID");
                 employee = getEmployeeByID(employeeID);
                 customer  = getCustomerByPesel(customerID);
@@ -839,8 +1320,8 @@ public class DatabaseManager  {
         try {
             ResultSet result = stat.executeQuery(sql);
             int id, employeeID; double priceForRent;
-            String dateOfRental, dateOfReturn, customerID, vehicleID, typeOfVehicle;
-            Employee employee; Customer customer; Vehicle vehicle = null;
+            String customerID, vehicleID, typeOfVehicle;
+            Employee employee; Customer customer; Vehicle vehicle = null; Date dateOfRental, dateOfReturn;
             int x = 0;
             int resultSize = countSizeResultSet(result);
             result = stat.executeQuery(sql);
@@ -853,8 +1334,8 @@ public class DatabaseManager  {
                 vehicleID = result.getString("vehicleID");
                 typeOfVehicle = result.getString("vehicleType");
                 priceForRent = result.getDouble("totalPrice");
-                dateOfRental = result.getString("startDate");
-                dateOfReturn = result.getString("endDate");
+                dateOfRental = result.getDate("startDate");
+                dateOfReturn = result.getDate("endDate");
                 employeeID = result.getInt("employeeID");
                 employee = getEmployeeByID(employeeID);
                 customer  = getCustomerByPesel(customerID);
@@ -1028,7 +1509,6 @@ public class DatabaseManager  {
             "status int," +  // status 0 - actual, 1 - archival
             " PRIMARY KEY (peselNumber)" ;
 
-
     private static final String EmployeeTableStruct = "(UUID  int NOT NULL AUTO_INCREMENT," +
             "firstName varchar(30)," +
             "lastName varchar(50)," +
@@ -1036,6 +1516,9 @@ public class DatabaseManager  {
             "phoneNumber int," +
             "email varchar(50)," +
             "status int, " +
+            "login varchar(50) NOT NULL UNIQUE, " +
+            "password varchar(70) NOT NULL, " +
+            "salt varchar(700) NOT NULL, " +
             " PRIMARY KEY (UUID)" ;
 
     private static final String RentTableStruct = "(id  int NOT NULL AUTO_INCREMENT," +
@@ -1044,11 +1527,10 @@ public class DatabaseManager  {
             "employeeID int," +
             "vehicleType varchar(30)," + // 1 - car, 2 - bike, 3 - motorcycle
             "totalPrice double," +
-            "startDate varchar(10)," + // in format 01-23-2018 | DD-MM-YYYY
-            "endDate varchar(10)," +  // in format 01-23-2018 | DD-MM-YYYY
+            "startDate DATE," + // in format 01-23-2018 | DD-MM-YYYY
+            "endDate DATE   ," +  // in format 01-23-2018 | DD-MM-YYYY
             "status varchar(30)," + // status 0 - actual, 1 - archival;
             " PRIMARY KEY (id)," ;
-
 
     private static final String CarTableStruct = "(id varchar(10)," +
             "vehicleStatus  varchar(30)," +
@@ -1064,7 +1546,6 @@ public class DatabaseManager  {
             "numberOffPersons int," +
             " PRIMARY KEY (id)" ;
 
-
     private static final String BikeTableStruct = "(id varchar(10)," +
             "vehicleStatus  varchar(30)," +
             "vehicleType  varchar(30)," + // 1 - car, 2 - bike, 3 - motorcycle
@@ -1073,7 +1554,6 @@ public class DatabaseManager  {
             "color varchar(20)," +
             "productionYear int," +
             " PRIMARY KEY (id)" ;
-
 
     private static final String MotorcycleTableStruct = "(id varchar(10)," +
             "vehicleStatus  varchar(30)," +
@@ -1087,7 +1567,6 @@ public class DatabaseManager  {
             "fuelUsage double," +
             " PRIMARY KEY (id)" ;
 
-
     /**
      * Setup Database
      */
@@ -1095,9 +1574,6 @@ public class DatabaseManager  {
         // Relations
         String databaseDefinition= "CREATE DATABASE IF NOT EXISTS vehicle_rental; ";
         String relationRents_Customers = "  FOREIGN KEY (customerID) REFERENCES customers(peselNumber),";
-        String relationRents_vehicle1 = "  FOREIGN KEY (vehicleID) REFERENCES cars(id),";
-        String relationRents_vehicle2 = "  FOREIGN KEY (vehicleID) REFERENCES bikes(id),";
-        String relationRents_vehicle3 = "  FOREIGN KEY (vehicleID) REFERENCES motorcycles(id),";
         String relationEmpolyee_Rent = "  FOREIGN KEY (employeeID) REFERENCES employees(UUID)";
 
         // Creating tables definition
@@ -1107,7 +1583,6 @@ public class DatabaseManager  {
         String bikeTable= "CREATE TABLE IF NOT EXISTS bikes" +  BikeTableStruct  + ")";
         String motorcycleTable = "CREATE TABLE IF NOT EXISTS motorcycles" +  MotorcycleTableStruct  + ")";
         String RentTable = "CREATE TABLE IF NOT EXISTS rents" +  RentTableStruct +  relationRents_Customers + relationEmpolyee_Rent + ");";
-
 
         try {
             // Create tables

@@ -18,6 +18,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import java.sql.Date;
 import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -172,7 +173,7 @@ class DataBaseTest {
 
     @org.junit.jupiter.api.Test
     void getCustomerDuringRents() throws ErrorMessageException {
-        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email");
+        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email", "1", "", "");
         DatabaseManager.addCustomer("zz", "zz", "95062910555", "address1", 1111111, "dominik1116@one.eu", "comakdk", "9956-3565-9656","companyAdress1");
         DatabaseManager.addCustomer("zz", "zz", "95062910554", "address1", 1111111, "dominik1116@one.eu", "comakdk", "9956-3565-9656","companyAdress1");
         DatabaseManager.addCar("AAA", "nameCar", 1111, Color.czerwony, 2000, 2999998, 1.9, 5.7, FuelType.diesel,5);
@@ -182,13 +183,13 @@ class DataBaseTest {
         List<Rent> rents = DatabaseManager.getCustomerDuringRents("95062910555");
         assertEquals(0, rents.size());
 
-        DatabaseManager.addRent("95062910555", "AAA", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
+        DatabaseManager.addRent("95062910555", "AAA", VehicleType.car, 40, new java.sql.Date(10-10-2018),  new Date(11-11-2018), 1);
 
         rents = DatabaseManager.getCustomerDuringRents("95062910555");
         assertEquals(1, rents.size());
 
-        DatabaseManager.addRent("95062910555", "BBB", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
-        DatabaseManager.addRent("95062910555", "CCC", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
+        DatabaseManager.addRent("95062910555", "BBB", VehicleType.car, 40, new java.sql.Date(10-10-2018), new Date(11-11-2018), 1);
+        DatabaseManager.addRent("95062910555", "CCC", VehicleType.car, 40, new java.sql.Date(10-10-2018),  new Date(11-11-2018), 1);
 
         rents = DatabaseManager.getCustomerDuringRents("95062910555");
         assertEquals(3, rents.size());
@@ -196,8 +197,8 @@ class DataBaseTest {
         String response_2 = rents.get(1).toString();
         String response_3 = rents.get(2).toString();
 
-        DatabaseManager.addRent("95062910554", "BBB", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
-        DatabaseManager.addRent("95062910554", "BBB", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
+        DatabaseManager.addRent("95062910554", "BBB", VehicleType.car, 40, new java.sql.Date(10-10-2018),  new Date(11-11-2018), 1);
+        DatabaseManager.addRent("95062910554", "BBB", VehicleType.car, 40, new java.sql.Date(10-10-2018),  new Date(11-11-2018), 1);
         rents = DatabaseManager.getCustomerDuringRents("95062910555");
         assertEquals(3, rents.size());
         assertEquals(response_1, rents.get(0).toString());
@@ -207,7 +208,7 @@ class DataBaseTest {
 
     @Test
     void getCustomerEndedents_Test() throws ErrorMessageException {
-        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email");
+        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email", "1", "", "");
         DatabaseManager.addCustomer("zz", "zz", "95062910555", "address1", 1111111, "dominik1116@one.eu", "comakdk", "9956-3565-9656","companyAdress1");
         DatabaseManager.addCustomer("zz", "zz", "95062910554", "address1", 1111111, "dominik1116@one.eu", "comakdk", "9956-3565-9656","companyAdress1");
         DatabaseManager.addCar("AAA", "nameCar", 1111, Color.czerwony, 2000, 2999998, 1.9, 5.7, FuelType.diesel,5);
@@ -217,13 +218,13 @@ class DataBaseTest {
         List<Rent> rents = DatabaseManager.getCustomerEndedRents("95062910555");
         assertEquals(0, rents.size());
 
-        DatabaseManager.addRent("95062910555", "AAA", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
+        DatabaseManager.addRent("95062910555", "AAA", VehicleType.car, 40, new java.sql.Date(10-10-2018), new Date(11-11-2018), 1);
         DatabaseManager.markRentAsArchival(1);
         rents = DatabaseManager.getCustomerEndedRents("95062910555");
         assertEquals(1, rents.size());
 
-        DatabaseManager.addRent("95062910555", "BBB", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
-        DatabaseManager.addRent("95062910555", "CCC", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
+        DatabaseManager.addRent("95062910555", "BBB", VehicleType.car, 40, new java.sql.Date(10-10-2018), new Date(11-11-2018), 1);
+        DatabaseManager.addRent("95062910555", "CCC", VehicleType.car, 40, new java.sql.Date(10-10-2018), new Date(11-11-2018), 1);
         DatabaseManager.markRentAsArchival(2);
         DatabaseManager.markRentAsArchival(3);
 
@@ -233,8 +234,8 @@ class DataBaseTest {
         String response_2 = rents.get(1).toString();
         String response_3 = rents.get(2).toString();
 
-        DatabaseManager.addRent("95062910554", "BBB", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
-        DatabaseManager.addRent("95062910554", "CCC", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
+        DatabaseManager.addRent("95062910554", "BBB", VehicleType.car, 40, new java.sql.Date(10-10-2018), new Date(11-11-2018), 1);
+        DatabaseManager.addRent("95062910554", "CCC", VehicleType.car, 40, new java.sql.Date(10-10-2018), new Date(11-11-2018), 1);
         rents = DatabaseManager.getCustomerEndedRents("95062910555");
         DatabaseManager.markRentAsArchival(4);
         DatabaseManager.markRentAsArchival(5);
@@ -248,11 +249,11 @@ class DataBaseTest {
 
     @org.junit.jupiter.api.Test
     void updateRentPrice_Test() throws ErrorMessageException {
-        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email");
+        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email", "1", "", "");
         DatabaseManager.addCustomer("zz", "zz", "95062910555", "address1", 1111111, "dominik1116@one.eu", "comakdk", "9956-3565-9656","companyAdress1");
         DatabaseManager.addCar("AAA", "nameCar", 1111, Color.czerwony, 2000, 2999998, 1.9, 5.7, FuelType.diesel,5);
 
-        DatabaseManager.addRent("95062910555", "AAA", VehicleType.car, 40, "10-10-2018", "11-11-2018", 1);
+        DatabaseManager.addRent("95062910555", "AAA", VehicleType.car, 40, new java.sql.Date(10-10-2018), new Date(11-11-2018), 1);
 
         Rent rent = DatabaseManager.getRentByRentID(1);
         assertEquals(40, rent.getPriceForRent());
@@ -443,7 +444,7 @@ class DataBaseTest {
 
     @org.junit.jupiter.api.Test
     void getEmployeeById() throws ErrorMessageException {
-        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email");
+        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email", "1", "", "");
         Employee employee = DatabaseManager.getEmployeeByID(1);
         assertEquals("{UUID = 1, imię = Dawid, nazwisko = Dawidziak, numer telefonu = 888777666, adres = addres, email = email}", employee.toString());
     }

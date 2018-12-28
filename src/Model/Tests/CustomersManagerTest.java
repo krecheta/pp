@@ -142,4 +142,27 @@ class CustomersManagerTest {
         assertEquals(1, customers.size());
         assertEquals(response1, customers.get(0).toString());
     }
+
+    @Test
+    void   getFilteredCustomers() throws ErrorMessageException {
+        DatabaseManager.addCustomer("Dominik", "Janiak", "95062910555", "address", 151515664, "dominik1116@one.eu", "comakdk", "9956-3565-9656","companyAdress");
+        DatabaseManager.addCustomer("Dawid", "Ganiak", "95062910554", "address", 151515664, "dominik1116@one.eu", "comakdk", "9956-3565-9656","companyAdress");
+        DatabaseManager.addCustomer("Zbyszek", "Janczyk", "95062910553", "address", 151515664, "dominik1116@one.eu", "comakdk", "9956-3565-9656","companyAdress");
+        DatabaseManager.addCustomer("Rafal", "Romanowksi", "95062910552", "address", 151515664, "dominik1116@one.eu", "comakdk", "9956-3565-9656","companyAdress");
+        DatabaseManager.markCustomerAsArchival("95062910555");
+        DatabaseManager.markCustomerAsArchival("95062910554");
+
+        List<Customer> customers = customersManager.getFilteredCustomers("9506291055", null, null);
+        assertEquals(4, customers.size());
+        customers = customersManager.getFilteredCustomers("9506291055", "D", null);
+        assertEquals(2, customers.size());
+        customers = customersManager.getFilteredCustomers("9506291055", "D", "aniak");
+        assertEquals(2, customers.size());
+        customers = customersManager.getFilteredCustomers("9506291055", "D", "J");
+        assertEquals(1, customers.size());
+        customers = customersManager.getFilteredCustomers("95062910556", "D", "J");
+        assertEquals(0, customers.size());
+        customers = customersManager.getFilteredCustomers(null, null,  null);
+        assertEquals(4, customers.size());
+    }
 }

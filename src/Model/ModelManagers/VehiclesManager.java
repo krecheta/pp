@@ -112,7 +112,31 @@ public class VehiclesManager {
         DatabaseManager.markVehicleAsArchival(vehicle.getId(), vehicle.getVehicleType());
     }
 
-    public List<Vehicle> getFilteredVehicles(){
-        return new ArrayList<>();
+    public List<Vehicle> getFilteredVehicles(String name, String color, String typeOfComparePriceMin,String typeOfComparePriceMax, double minPrice, double maxPrice,
+                                             String typeOfCompareProductionYeatMin, String typeOfCompareProductionYeatMax, int minProductionYear, int maxProductionYear,
+                                             String typeOfCompareMileageMin, String typeOfCompareMileageMax, long minMileage, long maxMileage, String typeOfCompareEngineCapacityMin,
+                                             String typeOfCompareEngineCapacityMax, double minCapacity, double maxCapacity, FuelType fuelType,
+                                             String typeOfCompareFuelUsageMin, String typeOfCompareFuelUsageMax, double minFuelUsage, double maxFuelUsage, int quantityOfPerson) throws ErrorMessageException{
+        List<Vehicle> vehicleList = new ArrayList<>();
+        vehicleList.addAll(DatabaseManager.getFilteredCars(name, color, typeOfComparePriceMin,typeOfComparePriceMax, minPrice, maxPrice,
+                            typeOfCompareProductionYeatMin, typeOfCompareProductionYeatMax, minProductionYear, maxProductionYear,
+                            typeOfCompareMileageMin, typeOfCompareMileageMax, minMileage, maxMileage, typeOfCompareEngineCapacityMin,
+                            typeOfCompareEngineCapacityMax, minCapacity, maxCapacity, fuelType,
+                            typeOfCompareFuelUsageMin, typeOfCompareFuelUsageMax, minFuelUsage, maxFuelUsage, quantityOfPerson));
+
+        if(fuelType == null && quantityOfPerson == -1)
+            vehicleList.addAll(DatabaseManager.getFilteredMotorcycles(name, color, typeOfComparePriceMin,typeOfComparePriceMax, minPrice, maxPrice,
+                                typeOfCompareProductionYeatMin, typeOfCompareProductionYeatMax, minProductionYear, maxProductionYear,
+                                typeOfCompareMileageMin, typeOfCompareMileageMax, minMileage, maxMileage, typeOfCompareEngineCapacityMin,
+                                typeOfCompareEngineCapacityMax, minCapacity, maxCapacity,
+                                typeOfCompareFuelUsageMin, typeOfCompareFuelUsageMax, minFuelUsage, maxFuelUsage));
+
+
+        if(fuelType == null && quantityOfPerson == -1 && typeOfCompareMileageMin == null && typeOfCompareMileageMax == null  && typeOfCompareEngineCapacityMax == null
+            && typeOfCompareFuelUsageMin == null )
+            vehicleList.addAll(DatabaseManager.getFilteredBikes(name, color, typeOfComparePriceMin,typeOfComparePriceMax, minPrice, maxPrice,
+                    typeOfCompareProductionYeatMin, typeOfCompareProductionYeatMax, minProductionYear, maxProductionYear));
+
+        return vehicleList;
     }
 }
