@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="493.0" prefWidth="756.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+    <children>
+        <TableView fx:id="vehiclesTableView" layoutX="14.0" layoutY="14.0" prefHeight="276.0" prefWidth="731.0">
+            <columns>
+                <TableColumn prefWidth="150.6666612625122" text="Nazwa" />
+                <TableColumn prefWidth="60.66668701171875" text="Rodzaj" />
+                <TableColumn prefWidth="42.666656494140625" text="Koszt" />
+                <TableColumn prefWidth="55.99993896484375" text="Kolor" />
+                <TableColumn prefWidth="56.6666259765625" text="Rok produkcji" />
+                <TableColumn prefWidth="77.99993896484375" text="Przebieg [km]" />
+                <TableColumn prefWidth="65.3333740234375" text="Pojemność silnika" />
+                <TableColumn prefWidth="82.0" text="Rodzaj paliwa" />
+                <TableColumn prefWidth="63.3333740234375" text="Spalanie" />
+                <TableColumn prefWidth="76.66668701171875" text="Liczba osób" />
+            </columns>
+        </TableView>
+        <Button fx:id="choiceButton" layoutX="679.0" layoutY="454.0" mnemonicParsing="false" onAction="#choiceButtonOnAction" text="Wybierz" />
+      <Label layoutX="24.0" layoutY="393.0" text="Koszt [zł]:" />
+      <ChoiceBox fx:id="priceComboBox" layoutX="105.0" layoutY="389.0" prefHeight="25.0" prefWidth="0.0" />
+      <TextField fx:id="minPriceFieldText" layoutX="139.0" layoutY="389.0" prefHeight="25.0" prefWidth="90.0" />
+      <TextField fx:id="maxPriceFieldText" layoutX="253.0" layoutY="389.0" prefHeight="25.0" prefWidth="90.0" />
+      <Label layoutX="233.0" layoutY="393.0" text="do" />
+      <Label layoutX="24.0" layoutY="423.0" text="Rok produkcji:" />
+      <ChoiceBox fx:id="yearComboBox" layoutX="105.0" layoutY="419.0" prefHeight="25.0" prefWidth="0.0" />
+      <TextField fx:id="minYearFieldText" layoutX="139.0" layoutY="419.0" prefHeight="25.0" prefWidth="90.0" />
+      <TextField fx:id="maxYearFieldText" layoutX="253.0" layoutY="419.0" prefHeight="25.0" prefWidth="90.0" />
+      <Label layoutX="233.0" layoutY="423.0" text="do" />
+      <Label layoutX="368.0" layoutY="303.0" text="Przebieg [km]:" />
+      <ChoiceBox fx:id="mileageComboBox" layoutX="482.0" layoutY="301.0" prefHeight="25.0" prefWidth="0.0" />
+      <TextField fx:id="minMileageFieldText" layoutX="521.0" layoutY="301.0" prefHeight="25.0" prefWidth="90.0" />
+      <TextField fx:id="maxMileageFieldText" layoutX="638.0" layoutY="302.0" prefHeight="25.0" prefWidth="90.0" />
+      <Label layoutX="617.0" layoutY="306.0" text="do" />
+      <Label layoutX="368.0" layoutY="333.0" text="Pojemność [l]:" />
+      <ChoiceBox fx:id="capacityComboBox" layoutX="482.0" layoutY="330.0" prefHeight="25.0" prefWidth="0.0" />
+      <TextField fx:id="minCapacityFieldText" layoutX="521.0" layoutY="330.0" prefHeight="25.0" prefWidth="90.0" />
+      <TextField fx:id="maxCapacityFieldText" layoutX="638.0" layoutY="331.0" prefHeight="25.0" prefWidth="90.0" />
+      <Label layoutX="617.0" layoutY="335.0" text="do" />
+      <ChoiceBox fx:id="fuelUseComboBox" layoutX="482.0" layoutY="389.0" prefHeight="25.0" prefWidth="0.0" />
+      <TextField fx:id="minFuelUseFieldText" layoutX="521.0" layoutY="389.0" prefHeight="25.0" prefWidth="90.0" />
+      <TextField fx:id="maxFuelUseFieldText" layoutX="638.0" layoutY="390.0" prefHeight="25.0" prefWidth="90.0" />
+      <Label layoutX="617.0" layoutY="394.0" text="do" />
+      <Label layoutX="368.0" layoutY="363.0" text="Rodzaj paliwa:" />
+      <Label layoutX="24.0" layoutY="303.0" text="Nazwa:" />
+      <TextField fx:id="nameFieldText" layoutX="139.0" layoutY="299.0" prefHeight="25.0" prefWidth="90.0" />
+      <Label layoutX="24.0" layoutY="333.0" text="Rodzaj:" />
+      <Label layoutX="24.0" layoutY="363.0" text="Kolor:" />
+      <TextField fx:id="colourFieldText" layoutX="139.0" layoutY="359.0" prefHeight="25.0" prefWidth="90.0" />
+      <ComboBox fx:id="fuelTypeComboBox" layoutX="521.0" layoutY="359.0" prefHeight="25.0" prefWidth="90.0" />
+      <Label layoutX="368.0" layoutY="393.0" text="Spalanie [l/100 km]:" />
+      <Label layoutX="368.0" layoutY="423.0" text="Liczba osób:" />
+      <ComboBox fx:id="personsComboBox" layoutX="521.0" layoutY="419.0" prefHeight="25.0" prefWidth="50.0" />
+      <Button fx:id="filterButtons" layoutX="110.0" layoutY="454.0" mnemonicParsing="false" onAction="#filterButtonsOnAction" text="Filtruj" />
+      <Button fx:id="clearFiltersButton" layoutX="14.0" layoutY="454.0" mnemonicParsing="false" onAction="#clearFiltersButtonOnAction" text="Wyczyść filtry" />
+      <ComboBox fx:id="typeComboBox" layoutX="139.0" layoutY="329.0" prefHeight="25.0" prefWidth="90.0" />
+    </children>
+</AnchorPane>

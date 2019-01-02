@@ -1,18 +1,17 @@
-package Model.Tests;
+package model.tests;
 
-import DataBase.DatabaseManager;
-import Model.CustomEnumValues.Color;
-import Model.CustomEnumValues.FuelType;
-import Model.CustomEnumValues.VehicleStatus;
-import Model.CustomEnumValues.VehicleType;
-import Model.CustomExceptions.ErrorMessageException;
-import Model.Logs;
-import Model.ModelManagers.CustomersManager;
-import Model.ModelManagers.VehiclesManager;
-import Model.Vehicles.Bike;
-import Model.Vehicles.Car;
-import Model.Vehicles.Motorcycle;
-import Model.Vehicles.Vehicle;
+import database.DatabaseManager;
+import model.enums.Color;
+import model.enums.FuelType;
+import model.enums.VehicleStatus;
+import model.enums.VehicleType;
+import model.exceptions.ErrorMessageException;
+import model.Logs;
+import model.managers.VehiclesManager;
+import model.vehicles.Bike;
+import model.vehicles.Car;
+import model.vehicles.Motorcycle;
+import model.vehicles.Vehicle;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 

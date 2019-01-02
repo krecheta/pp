@@ -1,28 +1,25 @@
-package Model.Tests;
+package model.tests;
 
-import DataBase.DatabaseManager;
-import Model.CustomEnumValues.Color;
-import Model.CustomEnumValues.FuelType;
-import Model.CustomEnumValues.VehicleStatus;
-import Model.CustomEnumValues.VehicleType;
-import Model.CustomExceptions.ErrorMessageException;
-import Model.Customer;
-import Model.Employee;
-import Model.Logs;
-import Model.ModelManagers.RentsManager;
-import Model.ModelManagers.VehiclesManager;
-import Model.Rent;
-import Model.Vehicles.Bike;
-import Model.Vehicles.Car;
-import Model.Vehicles.Motorcycle;
+import database.DatabaseManager;
+import model.enums.Color;
+import model.enums.FuelType;
+import model.enums.VehicleStatus;
+import model.enums.VehicleType;
+import model.exceptions.ErrorMessageException;
+import model.Customer;
+import model.Employee;
+import model.Logs;
+import model.managers.RentsManager;
+import model.Rent;
+import model.vehicles.Bike;
+import model.vehicles.Car;
+import model.vehicles.Motorcycle;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.*;
 

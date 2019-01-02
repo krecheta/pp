@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+
+<AnchorPane prefHeight="520.0" prefWidth="707.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
+   <children>
+      <TableView fx:id="rentsTableView" layoutX="16.0" layoutY="99.0" prefHeight="259.0" prefWidth="675.0">
+        <columns>
+          <TableColumn editable="false" prefWidth="122.66665649414062" text="Pojazd" />
+          <TableColumn editable="false" prefWidth="110.0" text="Klient" />
+            <TableColumn prefWidth="110.0" text="Pracownik" />
+            <TableColumn editable="false" prefWidth="105.0" text="Data wypożyczenia" />
+            <TableColumn editable="false" prefWidth="105.0" text="Data zwrotu" />
+            <TableColumn editable="false" prefWidth="60.0" text="Status" />
+            <TableColumn editable="false" prefWidth="60.0" text="Koszt" />
+        </columns>
+         <contextMenu>
+            <ContextMenu>
+              <items>
+                <MenuItem id="rentDetailsMenuItem" mnemonicParsing="false" onAction="#rentDetailsMenuItemOnAction" text="Szczegóły" />
+                  <MenuItem id="endRentMenuItem" mnemonicParsing="false" onAction="#endRentMenuItemOnAction" text="Zakończ wypożyczenie" />
+              </items>
+            </ContextMenu>
+         </contextMenu>
+      </TableView>
+      <HBox alignment="CENTER" layoutX="15.0" layoutY="15.0" prefHeight="69.0" prefWidth="675.0" spacing="35.0">
+         <children>
+            <Button fx:id="newRentButton" mnemonicParsing="false" onAction="#newRentButtonOnAction" prefHeight="70.0" prefWidth="100.0" text="Nowe wypożyczenie" />
+            <Button fx:id="vehiclesButton" mnemonicParsing="false" onAction="#vehiclesButtonOnAction" prefHeight="70.0" prefWidth="100.0" text="Pojazdy" />
+            <Button fx:id="customersButton" mnemonicParsing="false" onAction="#customersButtonOnAction" prefHeight="70.0" prefWidth="100.0" text="Klienci" />
+            <Button fx:id="employeesButton" mnemonicParsing="false" onAction="#employeesButtonOnAction" prefHeight="70.0" prefWidth="100.0" text="Pracownicy" />
+            <Button fx:id="programDetailsButton" mnemonicParsing="false" onAction="#programDetailsButtonOnAction" prefHeight="70.0" prefWidth="100.0" text="O programie" />
+         </children>
+      </HBox>
+      <Label layoutX="16.0" layoutY="368.0" text="Nr rej. pojazdu:" />
+      <Label layoutX="17.0" layoutY="398.0" text="Nazwa pojazdu:" />
+      <TextField fx:id="vehicleIdTextField" layoutX="112.0" layoutY="365.0" prefHeight="25.0" prefWidth="120.0" />
+      <TextField fx:id="vehicleNameTextField" layoutX="112.0" layoutY="395.0" prefHeight="25.0" prefWidth="120.0" />
+      <TextField fx:id="customerNameTextField" layoutX="112.0" layoutY="425.0" prefHeight="25.0" prefWidth="120.0" />
+      <TextField fx:id="peselTextField" layoutX="112.0" layoutY="455.0" prefHeight="25.0" prefWidth="120.0" />
+      <Label layoutX="17.0" layoutY="428.0" text="Nazwisko klienta:" />
+      <Label layoutX="16.0" layoutY="458.0" text="PESEL klienta:" />
+      <DatePicker fx:id="minRentDatePicker" layoutX="385.0" layoutY="367.0" prefHeight="25.0" prefWidth="135.0" />
+      <Label layoutX="240.0" layoutY="369.0" text="Data wypożyczenia:" />
+      <DatePicker fx:id="maxRentDatePicker" layoutX="556.0" layoutY="367.0" prefHeight="25.0" prefWidth="135.0" />
+      <Label layoutX="529.0" layoutY="370.0" text="do" />
+      <Label layoutX="240.0" layoutY="399.0" text="Data zwrotu:" />
+      <DatePicker fx:id="minReturnDatePicker" layoutX="385.0" layoutY="397.0" prefHeight="25.0" prefWidth="135.0" />
+      <Label layoutX="529.0" layoutY="401.0" text="do" />
+      <DatePicker fx:id="maxReturnDatePicker" layoutX="556.0" layoutY="397.0" prefHeight="25.0" prefWidth="135.0" />
+      <Label layoutX="240.0" layoutY="429.0" text="Koszt:" />
+      <TextField fx:id="minPriceTextField" layoutX="385.0" layoutY="427.0" prefHeight="25.0" prefWidth="135.0" />
+      <Label layoutX="529.0" layoutY="431.0" text="do" />
+      <TextField fx:id="maxPriceTextField" layoutX="556.0" layoutY="427.0" prefHeight="25.0" prefWidth="135.0" />
+      <Label layoutX="240.0" layoutY="457.0" text="Status:" />
+      <ComboBox fx:id="statusComboBox" layoutX="385.0" layoutY="455.0" prefHeight="25.0" prefWidth="135.0" />
+      <Button fx:id="filterButton" layoutX="543.0" layoutY="484.0" mnemonicParsing="false" onAction="#filterButtonOnAction" text="Filtruj" />
+      <Button fx:id="clearFilterButton" layoutX="452.0" layoutY="484.0" mnemonicParsing="false" onAction="#clearFilterButtonOnAction" text="Wyczyść filtr" />
+      <ChoiceBox fx:id="rentDateComboBox" layoutX="348.0" layoutY="367.0" maxHeight="15.0" maxWidth="15.0" prefHeight="15.0" prefWidth="15.0" />
+      <ChoiceBox fx:id="returnDateComboBox" layoutX="348.0" layoutY="397.0" maxHeight="15.0" maxWidth="15.0" prefHeight="15.0" prefWidth="15.0" />
+      <ChoiceBox fx:id="priceComboBox" layoutX="348.0" layoutY="427.0" maxHeight="15.0" maxWidth="15.0" prefHeight="15.0" prefWidth="15.0" />
+      <Button fx:id="reportButton" layoutX="599.0" layoutY="484.0" mnemonicParsing="false" onAction="#reportButtonOnAction" text="Generuj raport" />
+      <Label layoutX="17.0" layoutY="488.0" text="Pracownik:" />
+      <TextField fx:id="employeeTextField" layoutX="112.0" layoutY="484.0" prefHeight="25.0" prefWidth="120.0" />
+   </children>
+</AnchorPane>

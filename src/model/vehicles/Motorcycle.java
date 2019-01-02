@@ -1,8 +1,8 @@
-package Model.Vehicles;
+package model.vehicles;
 
-import Model.CustomEnumValues.Color;
-import Model.CustomEnumValues.VehicleStatus;
-import Model.CustomEnumValues.VehicleType;
+import model.enums.Color;
+import model.enums.VehicleStatus;
+import model.enums.VehicleType;
 
 public class Motorcycle extends Vehicle {
     private final int mileage;
@@ -17,6 +17,12 @@ public class Motorcycle extends Vehicle {
         this.mileage = mileage;
         this.engineCapacity = engineCapacity;
         this.fuelUsage = fuelUsage;
+
+        mileageProperty = String.valueOf(mileage);
+        engineCapacityProperty = String.valueOf(engineCapacity);
+        fuelTypeProperty = "-";
+        fuelUsageProperty = String.valueOf(fuelUsage);
+        numOfPersonsProperty = "-";
     }
 
     @Override

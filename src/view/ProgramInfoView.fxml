@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+
+
+<AnchorPane prefHeight="177.0" prefWidth="274.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <Label layoutX="36.0" layoutY="5.0" text="Program &quot;Wypożyczalnia pojazdów&quot;" />
+      <Label layoutX="25.0" layoutY="28.0" text="Przedmiot:">
+         <font>
+            <Font name="System Bold" size="12.0" />
+         </font>
+      </Label>
+      <Label layoutX="123.0" layoutY="28.0" text="Pracownia problemowa" />
+      <Label layoutX="25.0" layoutY="48.0" text="Rok akademicki:" />
+      <Label layoutX="123.0" layoutY="48.0" text="2018/2019" />
+      <Label layoutX="25.0" layoutY="68.0" text="Autorzy:" />
+      <Label layoutX="123.0" layoutY="68.0" text="Kamil Recheta" />
+      <Label layoutX="123.0" layoutY="85.0" text="Dominik Dominiak" />
+      <Label layoutX="123.0" layoutY="102.0" text="Rafał Zieliński" />
+      <Label layoutX="123.0" layoutY="119.0" text="Aleksander Starzyński" />
+      <Button layoutX="115.0" layoutY="140.0" mnemonicParsing="false" text="OK" />
+   </children>
+</AnchorPane>

@@ -1,11 +1,10 @@
-package Model.Tests;
+package model.tests;
 
-import DataBase.DatabaseManager;
-import Model.CustomExceptions.ErrorMessageException;
-import Model.Employee;
-import Model.Logs;
-import Model.ModelManagers.CustomersManager;
-import Model.ModelManagers.EmployeesManager;
+import database.DatabaseManager;
+import model.exceptions.ErrorMessageException;
+import model.Employee;
+import model.Logs;
+import model.managers.EmployeesManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 

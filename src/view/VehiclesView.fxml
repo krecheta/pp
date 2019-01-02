@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ChoiceBox?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.ContextMenu?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+
+<AnchorPane prefHeight="532.0" prefWidth="827.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.VehiclesController">
+    <children>
+        <TableView fx:id="vehiclesTableView" layoutX="14.0" layoutY="14.0" prefHeight="276.0" prefWidth="799.0">
+            <columns>
+                <TableColumn fx:id="nameColumn" editable="false" prefWidth="150.6666612625122" text="Nazwa" />
+            <TableColumn fx:id="idColumn" editable="false" prefWidth="75.0" text="Nr rej." />
+                <TableColumn fx:id="typeColumn" editable="false" prefWidth="60.66668701171875" text="Rodzaj" />
+            <TableColumn fx:id="statusColumn" editable="false" prefWidth="59.333343505859375" text="Status" />
+                <TableColumn fx:id="priceColumn" editable="false" prefWidth="58.66668701171875" text="Koszt" />
+                <TableColumn fx:id="colourColumn" editable="false" prefWidth="55.99993896484375" text="Kolor" />
+                <TableColumn fx:id="yearColumn" editable="false" prefWidth="56.6666259765625" text="Rok produkcji" />
+                <TableColumn fx:id="mileageColumn" editable="false" prefWidth="57.999969482421875" text="Przebieg [km]" />
+                <TableColumn fx:id="engCapacityColumn" editable="false" prefWidth="52.66668701171875" text="Pojemność silnika" />
+                <TableColumn fx:id="fuelTypeColumn" editable="false" prefWidth="65.33331298828125" text="Rodzaj paliwa" />
+                <TableColumn fx:id="fuelUsageColumn" editable="false" prefWidth="54.0" text="Spalanie" />
+                <TableColumn fx:id="numOfPersonsColumn" editable="false" prefWidth="47.99995930989587" text="Liczba osób" />
+            </columns>
+         <contextMenu>
+            <ContextMenu>
+              <items>
+                <MenuItem fx:id="archiveVehicleMenuItem" mnemonicParsing="false" onAction="#archiveVehicleMenuItemOnAction" text="archiwizuj" />
+              </items>
+            </ContextMenu>
+         </contextMenu>
+        </TableView>
+        <Label layoutX="24.0" layoutY="455.0" text="Koszt [zł]:" />
+        <ChoiceBox fx:id="priceComboBox" layoutX="105.0" layoutY="451.0" maxWidth="25.0" prefHeight="25.0" prefWidth="0.0" />
+        <TextField fx:id="minPriceFieldText" layoutX="144.0" layoutY="451.0" prefHeight="25.0" prefWidth="100.0" />
+        <TextField fx:id="maxPriceFieldText" layoutX="271.0" layoutY="451.0" prefHeight="25.0" prefWidth="100.0" />
+        <Label layoutX="251.0" layoutY="455.0" text="do" />
+        <Label layoutX="415.0" layoutY="303.0" text="Rok produkcji:" />
+        <ChoiceBox fx:id="yearComboBox" layoutX="530.0" layoutY="299.0" prefHeight="25.0" prefWidth="0.0" />
+        <TextField fx:id="minYearFieldText" layoutX="570.0" layoutY="299.0" prefHeight="25.0" prefWidth="100.0" />
+        <TextField fx:id="maxYearFieldText" layoutX="697.0" layoutY="299.0" prefHeight="25.0" prefWidth="100.0" />
+        <Label layoutX="676.0" layoutY="303.0" text="do" />
+        <Label layoutX="415.0" layoutY="332.0" text="Przebieg [km]:" />
+        <ChoiceBox fx:id="mileageComboBox" layoutX="530.0" layoutY="330.0" prefHeight="25.0" prefWidth="0.0" />
+        <TextField fx:id="minMileageFieldText" layoutX="570.0" layoutY="330.0" prefHeight="25.0" prefWidth="100.0" />
+        <TextField fx:id="maxMileageFieldText" layoutX="697.0" layoutY="331.0" prefHeight="25.0" prefWidth="100.0" />
+        <Label layoutX="676.0" layoutY="335.0" text="do" />
+        <Label layoutX="415.0" layoutY="362.0" text="Pojemność [l]:" />
+        <ChoiceBox fx:id="capacityComboBox" layoutX="530.0" layoutY="359.0" prefHeight="25.0" prefWidth="0.0" />
+        <TextField fx:id="minCapacityFieldText" layoutX="570.0" layoutY="359.0" prefHeight="25.0" prefWidth="100.0" />
+        <TextField fx:id="maxCapacityFieldText" layoutX="697.0" layoutY="360.0" prefHeight="25.0" prefWidth="100.0" />
+        <Label layoutX="676.0" layoutY="364.0" text="do" />
+        <ChoiceBox fx:id="fuelUseComboBox" layoutX="530.0" layoutY="418.0" prefHeight="25.0" prefWidth="0.0" />
+        <TextField fx:id="minFuelUseFieldText" layoutX="570.0" layoutY="418.0" prefHeight="25.0" prefWidth="100.0" />
+        <TextField fx:id="maxFuelUseFieldText" layoutX="697.0" layoutY="419.0" prefHeight="25.0" prefWidth="100.0" />
+        <Label layoutX="676.0" layoutY="423.0" text="do" />
+        <Label layoutX="415.0" layoutY="392.0" text="Rodzaj paliwa:" />
+        <Label layoutX="24.0" layoutY="303.0" text="Nazwa:" />
+        <TextField fx:id="nameFieldText" layoutX="144.0" layoutY="299.0" prefHeight="25.0" prefWidth="100.0" />
+        <Label layoutX="24.0" layoutY="362.0" text="Rodzaj:" />
+        <Label layoutX="24.0" layoutY="422.0" text="Kolor:" />
+        <TextField fx:id="colourFieldText" layoutX="144.0" layoutY="421.0" prefHeight="25.0" prefWidth="100.0" />
+        <ComboBox fx:id="fuelTypeComboBox" layoutX="570.0" layoutY="388.0" prefHeight="25.0" prefWidth="100.0" />
+        <Label layoutX="415.0" layoutY="422.0" text="Spalanie [l/100 km]:" />
+        <Label layoutX="415.0" layoutY="452.0" text="Liczba osób:" />
+        <ComboBox fx:id="personsComboBox" layoutX="570.0" layoutY="448.0" prefHeight="25.0" prefWidth="50.0" />
+        <Button fx:id="filterButtons" layoutX="103.0" layoutY="494.0" mnemonicParsing="false" onAction="#filterButtonsOnAction" text="Filtruj" />
+        <Button fx:id="clearFiltersButton" layoutX="11.0" layoutY="494.0" mnemonicParsing="false" onAction="#clearFiltersButtonOnAction" text="Wyczyść filtry" />
+        <ComboBox fx:id="typeComboBox" layoutX="144.0" layoutY="358.0" prefHeight="25.0" prefWidth="100.0" />
+      <Button fx:id="addVehicleButton" layoutX="714.0" layoutY="494.0" mnemonicParsing="false" onAction="#addVehicleButtonOnAction" text="Dodaj pojazd" />
+      <Button fx:id="generateRaportButton" layoutX="614.0" layoutY="494.0" mnemonicParsing="false" onAction="#generateRaportButtonOnAction" text="Generuj raport" />
+      <Label layoutX="24.0" layoutY="332.0" text="Nr rejestracyjny:" />
+      <TextField fx:id="vehicleIdTextField" layoutX="144.0" layoutY="330.0" prefHeight="25.0" prefWidth="100.0" />
+      <Label layoutX="24.0" layoutY="392.0" text="Status:" />
+      <ComboBox fx:id="statusComboBox" layoutX="144.0" layoutY="389.0" prefHeight="25.0" prefWidth="100.0" />
+    </children>
+</AnchorPane>

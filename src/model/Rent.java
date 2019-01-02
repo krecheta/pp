@@ -1,9 +1,9 @@
-package Model;
+package model;
 
-import Model.CustomEnumValues.VehicleType;
-import Model.Vehicles.Bike;
-import Model.Vehicles.Car;
-import Model.Vehicles.Vehicle;
+import model.enums.VehicleType;
+import model.vehicles.Bike;
+import model.vehicles.Car;
+import model.vehicles.Vehicle;
 
 import java.util.Date;
 

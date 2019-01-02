@@ -1,9 +1,9 @@
-package Model.Vehicles;
+package model.vehicles;
 
-import Model.CustomEnumValues.Color;
-import Model.CustomEnumValues.FuelType;
-import Model.CustomEnumValues.VehicleStatus;
-import Model.CustomEnumValues.VehicleType;
+import model.enums.Color;
+import model.enums.FuelType;
+import model.enums.VehicleStatus;
+import model.enums.VehicleType;
 
 public class Car extends Vehicle {
     private final int mileage;
@@ -21,6 +21,20 @@ public class Car extends Vehicle {
         this.fuelUsage = fuelUsage;
         this.fuelType = fuelType;
         this.numberOffPersons = numberOffPersons;
+
+        mileageProperty = String.valueOf(mileage);
+        engineCapacityProperty = String.valueOf(engineCapacity);
+        if(fuelType.equals(FuelType.diesel)){
+            fuelTypeProperty = "diesel";
+        } else if(fuelType.equals(FuelType.petrol)){
+            fuelTypeProperty = "benzyna";
+        } else if(fuelType.equals(FuelType.electric)){
+            fuelTypeProperty = "elektryczny";
+        } else{
+            fuelTypeProperty = "benzyna + LPG";
+        }
+        fuelUsageProperty = String.valueOf(fuelUsage);
+        numOfPersonsProperty = String.valueOf(numberOffPersons);
     }
 
     @Override

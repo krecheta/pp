@@ -1,19 +1,19 @@
-package DataBase;
+package database;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import Model.CustomEnumValues.*;
-import Model.CustomExceptions.ErrorMessageException;
-import Model.Customer;
-import Model.Employee;
-import Model.Logs;
-import Model.Rent;
-import Model.Vehicles.Bike;
-import Model.Vehicles.Car;
-import Model.Vehicles.Motorcycle;
-import Model.Vehicles.Vehicle;
+import model.enums.*;
+import model.exceptions.ErrorMessageException;
+import model.Customer;
+import model.Employee;
+import model.Logs;
+import model.Rent;
+import model.vehicles.Bike;
+import model.vehicles.Car;
+import model.vehicles.Motorcycle;
+import model.vehicles.Vehicle;
 
 public class DatabaseManager  {
     private static Connection conn;
