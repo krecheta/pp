@@ -28,14 +28,7 @@ public class Customer {
 
     @Override
     public String toString() {
-        return   "{pesel = " + this.peselNumber +
-                ", imię = " + this.firstName +
-                ", nazwisko = " + this.lastName +
-                ", numer telefonu = " +this. phoneNumber +
-                ", adres = " + this.address +
-                ", email = " + this.email +
-                ", łączna zapłacona kwota za wypożyczenia = " + sumPaidForAllRents +
-                '}';
+        return firstName + " " + lastName;
     }
 
     public String getFirstName() {

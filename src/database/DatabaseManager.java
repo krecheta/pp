@@ -1,7 +1,12 @@
 package database;
 
 import java.sql.*;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import model.enums.*;
@@ -30,7 +35,7 @@ public class DatabaseManager  {
             Class.forName(DatabaseManager.JDBC_DRIVER);
         } catch (ClassNotFoundException e) {
             Logs.logger.warning("No driver JBC found");
-            throw new ErrorMessageException("Contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
 
         try {
@@ -41,7 +46,7 @@ public class DatabaseManager  {
             Logs.logger.warning("Problems with connection with dataBase");
             Logs.logger.warning(e.toString());
 
-            throw new ErrorMessageException("Contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         createTables();
     }
@@ -86,7 +91,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to add customer");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Can't properly add customer, contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -98,7 +103,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to update customer sum");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -120,7 +125,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to update customer data");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -167,7 +172,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get filtered lists all customer");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return customers;
     }
@@ -175,28 +180,28 @@ public class DatabaseManager  {
 
     public static Customer getCustomerByPesel(String peselNumber) throws  ErrorMessageException {
         ResultSet customerResult;
-        int phoneNumber; double sumPaidForAllRents;
-        String firstName, lastName, address, email, companyName, nipNumber, companyAddress;
+        int phoneNumber = -1; double sumPaidForAllRents = -1;
+        String peselNumber_  = null, firstName = null, lastName = null, address = null, email = null, companyName = null, nipNumber = null, companyAddress = null;
         try {
             customerResult = stat.executeQuery("SELECT * FROM customers where peselNumber =" + "\"" + peselNumber + "\"");
-            customerResult.next();
-            firstName = customerResult.getString("firstName");
-            lastName = customerResult.getString("lastName");
-            address = customerResult.getString("address");
-            phoneNumber = customerResult.getInt("phoneNumber");
-            email = customerResult.getString("email");
-            companyName = customerResult.getString("companyName");
-
-            nipNumber = customerResult.getString("nipNumber");
-            companyAddress = customerResult.getString("companyAddress");
-
-            sumPaidForAllRents = customerResult.getDouble("sum_paid_for_all_rents");
+            while(customerResult.next()) {
+                peselNumber_ = customerResult.getString("peselNumber");
+                firstName = customerResult.getString("firstName");
+                lastName = customerResult.getString("lastName");
+                address = customerResult.getString("address");
+                phoneNumber = customerResult.getInt("phoneNumber");
+                email = customerResult.getString("email");
+                companyName = customerResult.getString("companyName");
+                nipNumber = customerResult.getString("nipNumber");
+                companyAddress = customerResult.getString("companyAddress");
+                sumPaidForAllRents = customerResult.getDouble("sum_paid_for_all_rents");
+            }
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get Customer by Customer Pesel");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
-        return new Customer(firstName, lastName, peselNumber, address, phoneNumber, email, companyName, nipNumber, companyAddress, sumPaidForAllRents);
+        return new Customer(firstName, lastName, peselNumber_, address, phoneNumber, email, companyName, nipNumber, companyAddress, sumPaidForAllRents);
     }
 
     public static void markCustomerAsArchival(String peselNumber) throws ErrorMessageException{
@@ -207,7 +212,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to change Customer as archival");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -217,7 +222,7 @@ public class DatabaseManager  {
         } catch (Exception e) {
             Logs.logger.warning("Error when try to get Customer Actual Rents");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -227,12 +232,20 @@ public class DatabaseManager  {
         } catch (Exception e) {
             Logs.logger.warning("Error when try to get Customer Actual Rents");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
     public static void addRent(String customerID, String vehicleID, VehicleType typeOfVehicle, double totalPrice, Date startDate, Date endDate, int employeeID) throws ErrorMessageException {
         final long hours12 = 12L * 60L * 60L * 1000L;
+
+        Calendar rightNow = Calendar.getInstance();
+        int hour = rightNow.get(Calendar.HOUR_OF_DAY);
+        Date start;
+        if(hour < 12 )
+            start =  new Date(startDate.getTime() + hours12);
+       else
+            start =  new Date(startDate.getTime());
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
                     "insert into rents(customerID, vehicleID, vehicleType, totalPrice, startDate, endDate, status, employeeID) values ( ?, ?, ?, ?, ?, ?, ?, ?);");
@@ -240,7 +253,7 @@ public class DatabaseManager  {
             prepStmt.setString(2, vehicleID);
             prepStmt.setString(3, typeOfVehicle.name());
             prepStmt.setDouble(4, totalPrice);
-            prepStmt.setDate(5, new Date(startDate.getTime() + hours12));
+            prepStmt.setDate(5, start);
             prepStmt.setDate(6, new Date(endDate.getTime() + hours12));
             prepStmt.setString(7, RentStatus.during.name());
             prepStmt.setInt(8, employeeID);
@@ -248,7 +261,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to add rent");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -260,7 +273,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to delete rent");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
     public static void updateRentDate(int rentID, Date returnDate) throws ErrorMessageException{
@@ -271,7 +284,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to update rent end date");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -283,7 +296,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to delete rent");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -298,7 +311,7 @@ public class DatabaseManager  {
 
     public static Rent getRentByRentID(int rentID) throws ErrorMessageException {
         int employeeID; double priceForRent;
-        String typeOfVehicle, customerID, vehicleID;
+        String typeOfVehicle, customerID, vehicleID, status;
         Customer customer; Vehicle vehicle = null; Date dateOfRental, dateOfReturn;
         Employee employee;
         try {
@@ -307,6 +320,7 @@ public class DatabaseManager  {
             customerID = result.getString("customerID");
             vehicleID = result.getString("vehicleID");
             typeOfVehicle = result.getString("vehicleType");
+            status = result.getString("status");
             priceForRent = result.getDouble("totalPrice");
             dateOfRental = result.getDate("startDate");
             dateOfReturn = result.getDate("endDate");
@@ -328,16 +342,33 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get rent by rentID");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
-        return new Rent(vehicle, customer, employee, rentID, priceForRent, dateOfRental, dateOfReturn);
+        return new Rent(vehicle, customer, employee, rentID, priceForRent, dateOfRental, dateOfReturn, RentStatus.valueOf(status));
     }
 
     public static List<Rent> getFilteredRents(String vehicleID, String peselNumber, int employeeID, String rentTypeStartMin, String rentTypeStartMax ,Date startDateMin,
                                         Date startDateMax, String rentTypeEndMin, String rentTypeEndMax, Date endDateMin, Date endDateMax, String costTypeMin,
-                                        String costTypeMax, double costMin, double costMax) throws  ErrorMessageException{
+                                        String costTypeMax, double costMin, double costMax, String customerLastName, String employeeLastName, RentStatus rentStatus) throws  ErrorMessageException{
 
         String query = "Select * from rents ";
+
+        if (!(customerLastName == null))
+        query += " JOIN customers ON (customerID = peselNumber) ";
+
+        if (!(employeeLastName == null))
+            query += " JOIN employees ON (employeeID = UUID) ";
+
+        if (!(employeeLastName == null) && !query.contains("where"))
+            query += " where lastName LIKE \"%" + employeeLastName + "%\" ";
+        if (!(employeeLastName == null) && query.contains("where"))
+            query += " AND lastName LIKE \"%" + employeeLastName + "%\" ";
+
+        if (!(customerLastName == null) && !query.contains("where"))
+            query += " where lastName LIKE \"%" + customerLastName + "%\" ";
+        if (!(customerLastName == null) && query.contains("where"))
+            query += " AND lastName LIKE \"%" + customerLastName + "%\" ";
+
     //vehicle id
         if (!(vehicleID == null))
             query += "where vehicleID LIKE \"%" + vehicleID + "%\" ";
@@ -387,11 +418,17 @@ public class DatabaseManager  {
             query += " where totalPrice " + costTypeMax + " \"" + costMax + "\" ";
         if(!(costTypeMax == null) && !(costMax == -1) && query.contains("where"))
             query += " AND totalPrice " + costTypeMax + " \"" + costMax + "\" ";
+
+        if (!(rentStatus == null) && !query.contains("where"))
+            query += " where status=\"" + rentStatus.name() + "\" ";
+        if (!(rentStatus == null) && query.contains("where"))
+            query += " AND status=\"" + rentStatus.name() + "\" ";
+
         List<Rent> rent = new ArrayList<>();
         try {
             ResultSet result = stat.executeQuery(query);
             int id, employeeID_; double priceForRent;
-            String typeOfVehicle, customerID, vehicleID_;
+            String typeOfVehicle, customerID, vehicleID_, status;
             Employee employee; Customer customer; Vehicle vehicle= null; Date dateOfRental, dateOfReturn;
             int x = 0;
             int resultSize = countSizeResultSet(result);
@@ -408,8 +445,10 @@ public class DatabaseManager  {
                 dateOfRental = result.getDate("startDate");
                 dateOfReturn = result.getDate("endDate");
                 employeeID_ = result.getInt("employeeID");
+                status = result.getString("status");
                 employee = getEmployeeByID(employeeID_);
                 customer  = getCustomerByPesel(customerID);
+
 
                 switch (VehicleType.valueOf(typeOfVehicle)) {
                     case car:
@@ -422,7 +461,7 @@ public class DatabaseManager  {
                         vehicle = getMotorcycleByID(vehicleID_);
                         break;
                 }
-                rent.add(new Rent(vehicle, customer, employee, id, priceForRent, dateOfRental, dateOfReturn));
+                rent.add(new Rent(vehicle, customer, employee, id, priceForRent, dateOfRental, dateOfReturn, RentStatus.valueOf(status)));
                 x++;
                 result = stat.executeQuery(query);
                 result.next();
@@ -430,13 +469,13 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get filtered rents");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return rent;
 
     }
 
-    public static void addCar(String id, String name, double dailyPrice, Color color, int productionYear,
+    public static void addCar(String id, String name, double dailyPrice, String color, int productionYear,
                                  int mileage, double engineCapacity, double fuelUsage, FuelType fuelType,
                                  int numberOffPersons) throws ErrorMessageException {
         try {
@@ -449,7 +488,7 @@ public class DatabaseManager  {
             prepStmt.setString(3, VehicleType.car.name());
             prepStmt.setString(4, name);
             prepStmt.setDouble(5, dailyPrice);
-            prepStmt.setString(6, color.name());
+            prepStmt.setString(6, color);
             prepStmt.setInt(7, productionYear);
             prepStmt.setInt(8, mileage);
             prepStmt.setDouble(9, engineCapacity);
@@ -460,11 +499,11 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to add car to database");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Can't properly add car, contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
-    public static void updateCar(String id, String name, double dailyPrice, Color color, int productionYear,
+    public static void updateCar(String id, String name, double dailyPrice, String color, int productionYear,
                                  int mileage, double engineCapacity, double fuelUsage, FuelType fuelType,
                                  int numberOffPersons) throws ErrorMessageException{
         try {
@@ -472,7 +511,7 @@ public class DatabaseManager  {
                     "update cars set" +
                             " name = " + "\"" + name + "\"" +
                             " ,dailyPrice = " +"\""  + dailyPrice + "\""  +
-                            " ,color = " + "\"" + color.name() +"\""  +
+                            " ,color = " + "\"" + color +"\""  +
                             ", productionYear = " + "\"" + productionYear + "\"" +
                             " ,mileage = " +"\""  + mileage +"\""  +
                             " ,engineCapacity = " +"\""  + engineCapacity +"\""  +
@@ -485,36 +524,41 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to edit car ");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
     public static Car getCarByID (String carID) throws ErrorMessageException {
         ResultSet CarResult;
-        int productionYear,numberOffPersons, mileage;
-        double dailyPrice, engineCapacity, fuelUsage;
-        String vehicleStatus, vehicleType,name, color, fuelType;
+        int productionYear = -1,numberOffPersons = -1, mileage = -1;
+        double dailyPrice= -1, engineCapacity = -1, fuelUsage = -1;
+        String vehicleStatus =  null, vehicleType = null ,name = null, color = null, fuelType = null, id = null;
         try {
             CarResult = stat.executeQuery("SELECT * FROM cars where id=" + '\"' + carID  + '\"' );
-            CarResult.next();
-            vehicleStatus = CarResult.getString("vehicleStatus");
-            vehicleType = CarResult.getString("vehicleType");
-            name = CarResult.getString("name");
-            dailyPrice = CarResult.getDouble("dailyPrice");
-            color = CarResult.getString("color");
-            productionYear = CarResult.getInt("productionYear");
-            mileage = CarResult.getInt("mileage");
-            engineCapacity = CarResult.getDouble("engineCapacity");
-            fuelType = CarResult.getString("FuelType");
-            fuelUsage = CarResult.getDouble("fuelUsage");
-            numberOffPersons = CarResult.getInt("numberOffPersons");
+            while(CarResult.next()) {
+                id = CarResult.getString("id");
+                vehicleStatus = CarResult.getString("vehicleStatus");
+                vehicleType = CarResult.getString("vehicleType");
+                name = CarResult.getString("name");
+                dailyPrice = CarResult.getDouble("dailyPrice");
+                color = CarResult.getString("color");
+                productionYear = CarResult.getInt("productionYear");
+                mileage = CarResult.getInt("mileage");
+                engineCapacity = CarResult.getDouble("engineCapacity");
+                fuelType = CarResult.getString("FuelType");
+                fuelUsage = CarResult.getDouble("fuelUsage");
+                numberOffPersons = CarResult.getInt("numberOffPersons");
+            }
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get car by carID");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
-        return new Car(carID, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name, dailyPrice,
-                Color.valueOf(color),productionYear, mileage, engineCapacity, fuelUsage, FuelType.valueOf(fuelType),numberOffPersons);
+        if (id == null)
+        return new Car(id, VehicleStatus.archived, VehicleType.car, name, dailyPrice,
+                color, productionYear, mileage, engineCapacity, fuelUsage, FuelType.diesel,numberOffPersons);
+        return new Car(id, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name, dailyPrice,
+                String.valueOf(color),productionYear, mileage, engineCapacity, fuelUsage, FuelType.valueOf(fuelType),numberOffPersons);
     }
 
     public static List<Car> getAllAvaiableCars() throws ErrorMessageException{
@@ -532,7 +576,7 @@ public class DatabaseManager  {
     }
 
     public static void addBike(String id, String name, double dailyPrice,
-                               Color color, int productionYear) throws ErrorMessageException {
+                               String color, int productionYear) throws ErrorMessageException {
         try {
             PreparedStatement prepStmt;
             prepStmt = conn.prepareStatement(
@@ -542,7 +586,7 @@ public class DatabaseManager  {
             prepStmt.setString(3, VehicleType.bike.name());
             prepStmt.setString(4, name);
             prepStmt.setDouble(5, dailyPrice);
-            prepStmt.setString(6, color.name());
+            prepStmt.setString(6, color);
             prepStmt.setInt(7, productionYear);
             prepStmt.execute();
         } catch (SQLException e) {
@@ -553,43 +597,48 @@ public class DatabaseManager  {
     }
 
 
-    public static void updateBike(String id, String name, double dailyPrice, Color color, int productionYear) throws ErrorMessageException{
+    public static void updateBike(String id, String name, double dailyPrice, String color, int productionYear) throws ErrorMessageException{
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
                     "update bikes set" +
                             " name = " + "\"" + name + "\"" +
                             " ,dailyPrice = " +"\""  + dailyPrice + "\""  +
-                            " ,color = " + "\"" + color.name() +"\""  +
+                            " ,color = " + "\"" + color +"\""  +
                             ", productionYear = " + "\"" + productionYear + "\"" +
                             " where id  = " + "\"" + id + "\" ");
             prepStmt.execute();
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to edit bike ");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
     public static Bike getbikeByID (String bikeID) throws ErrorMessageException {
         ResultSet BikeResult;
-        int productionYear;
-        double dailyPrice;
-        String name, vehicleStatus, vehicleType, color;
+        int productionYear = -1;
+        double dailyPrice = -1;
+        String name = null, vehicleStatus =null, vehicleType=null, color = null, id = null;
         try {
             BikeResult = stat.executeQuery("SELECT * FROM bikes where id =" + '\"' + bikeID + '\"');
-            BikeResult.next();
-            vehicleStatus = BikeResult.getString("vehicleStatus");
-            vehicleType = BikeResult.getString("vehicleType");
-            name = BikeResult.getString("name");
-            dailyPrice = BikeResult.getDouble("dailyPrice");
-            color = BikeResult.getString("color");
-            productionYear = BikeResult.getInt("productionYear");
+            while(BikeResult.next()) {
+                id = BikeResult.getString("id");
+                vehicleStatus = BikeResult.getString("vehicleStatus");
+                vehicleType = BikeResult.getString("vehicleType");
+                name = BikeResult.getString("name");
+                dailyPrice = BikeResult.getDouble("dailyPrice");
+                color = BikeResult.getString("color");
+                productionYear = BikeResult.getInt("productionYear");
+            }
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get bike by bikeID");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
-        return new Bike(bikeID, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name,dailyPrice, Color.valueOf(color), productionYear);
+        if(id == null)
+            return new Bike(id, VehicleStatus.archived, VehicleType.bike, name,dailyPrice, color, productionYear);
+
+        return new Bike(id, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name,dailyPrice, String.valueOf(color), productionYear);
     }
 
 
@@ -597,14 +646,11 @@ public class DatabaseManager  {
                                             String typeOfCompareProductionYeatMin, String typeOfCompareProductionYeatMax, int minProductionYear, int maxProductionYear,
                                             String typeOfCompareMileageMin, String typeOfCompareMileageMax, long minMileage, long maxMileage, String typeOfCompareEngineCapacityMin,
                                             String typeOfCompareEngineCapacityMax, double minCapacity, double maxCapacity, FuelType fuelType,
-                                            String typeOfCompareFuelUsageMin, String typeOfCompareFuelUsageMax, double minFuelUsage, double maxFuelUsage, int quantityOfPerson) throws ErrorMessageException {
+                                            String typeOfCompareFuelUsageMin, String typeOfCompareFuelUsageMax, double minFuelUsage, double maxFuelUsage, int quantityOfPerson,
+                                            VehicleStatus vehicleStatus, String vehicleID) throws ErrorMessageException {
         String query = "Select * from cars ";
         if (!(name == null))
             query += "where name LIKE \"%" + name + "%\" ";
-        if (!(color == null) && !query.contains("where"))
-            query += "where color LIKE \"%" + color + "%\" ";
-        if (!(color == null) && query.contains("where"))
-            query += " AND color LIKE \"%" + color + "%\" ";
 
     // price min
         if(!(typeOfComparePriceMin == null) && !(minPrice == -1) && !query.contains("where"))
@@ -677,6 +723,16 @@ public class DatabaseManager  {
         if (!(quantityOfPerson == -1) && query.contains("where"))
             query += " AND numberOffPersons=\"" + quantityOfPerson + "\" ";
 
+        if (!(vehicleStatus == null) && !query.contains("where"))
+            query += " where vehicleStatus=\"" + vehicleStatus + "\" ";
+        if (!(vehicleStatus == null) && query.contains("where"))
+            query += " AND vehicleStatus=\"" + vehicleStatus + "\" ";
+
+        if (!(vehicleID == null) && !query.contains("where"))
+            query += " where id LIKE\"%" + vehicleID + "%\" ";
+        if (!(vehicleID == null) && query.contains("where"))
+            query += " AND id LIKE \"%" + vehicleID + "%\" ";
+
         List<Car> cars = new ArrayList<>();
         try {
             ResultSet result = stat.executeQuery(query);
@@ -697,13 +753,13 @@ public class DatabaseManager  {
                 numberOffPersons = result.getInt("numberOffPersons");
 
                 cars.add(new Car(id, VehicleStatus.valueOf(vehicleStatusString), VehicleType.valueOf(vehicleType), name_, dailyPrice,
-                        Color.valueOf(color_), productionYear, mileage, engineCapacity, fuelUsage, FuelType.valueOf(fuelType_),
+                        String.valueOf(color_), productionYear, mileage, engineCapacity, fuelUsage, FuelType.valueOf(fuelType_),
                         numberOffPersons));
             }
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get lists all cars");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return cars;
     }
@@ -712,7 +768,8 @@ public class DatabaseManager  {
                                             String typeOfCompareProductionYeatMin, String typeOfCompareProductionYeatMax, int minProductionYear, int maxProductionYear,
                                             String typeOfCompareMileageMin, String typeOfCompareMileageMax, long minMileage, long maxMileage, String typeOfCompareEngineCapacityMin,
                                             String typeOfCompareEngineCapacityMax, double minCapacity, double maxCapacity,
-                                            String typeOfCompareFuelUsageMin, String typeOfCompareFuelUsageMax, double minFuelUsage, double maxFuelUsage) throws ErrorMessageException {
+                                            String typeOfCompareFuelUsageMin, String typeOfCompareFuelUsageMax, double minFuelUsage, double maxFuelUsage,
+                                            VehicleStatus vehicleStatus, String vehicleID) throws ErrorMessageException {
         String query = "Select * from motorcycles ";
         if (!(name == null))
             query += "where name LIKE \"%" + name + "%\" ";
@@ -781,16 +838,25 @@ public class DatabaseManager  {
         if(!(typeOfCompareFuelUsageMax == null) && !(maxFuelUsage == -1) && query.contains("where"))
             query += " AND fuelUsage " + typeOfCompareFuelUsageMax + " \"" + maxFuelUsage + "\" ";
 
+        if (!(vehicleStatus == null) && !query.contains("where"))
+            query += " where vehicleStatus=\"" + vehicleStatus + "\" ";
+        if (!(vehicleStatus == null) && query.contains("where"))
+            query += " AND vehicleStatus=\"" + vehicleStatus + "\" ";
+
+        if (!(vehicleID == null) && !query.contains("where"))
+            query += " where id LIKE\"%" + vehicleID + "%\" ";
+        if (!(vehicleID == null) && query.contains("where"))
+            query += " AND id LIKE \"%" + vehicleID + "%\" ";
         List<Motorcycle> motorcycles = new ArrayList<>();
         try {
             ResultSet result = stat.executeQuery(query);
             double dailyPrice, fuelUsage, engineCapacity; int productionYear, mileage;
-            String id, name_, vehicleType, color_, vehicleStatus;
+            String id, name_, vehicleType, color_, vehicleStatus_;
             while(result.next()) {
                 id = result.getString("id");
                 vehicleType = result.getString("vehicleType");
                 name_ = result.getString("name");
-                vehicleStatus = result.getString("vehicleStatus");
+                vehicleStatus_ = result.getString("vehicleStatus");
                 dailyPrice = result.getDouble("dailyPrice");
                 color_ = result.getString("color");
                 productionYear = result.getInt("productionYear");
@@ -798,20 +864,21 @@ public class DatabaseManager  {
                 engineCapacity = result.getDouble("engineCapacity");
                 fuelUsage = result.getDouble("fuelUsage");
 
-                motorcycles.add(new Motorcycle(id, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name_, dailyPrice,
-                        Color.valueOf(color_), productionYear, mileage, engineCapacity, fuelUsage));
+                motorcycles.add(new Motorcycle(id, VehicleStatus.valueOf(vehicleStatus_), VehicleType.valueOf(vehicleType), name_, dailyPrice,
+                        String.valueOf(color_), productionYear, mileage, engineCapacity, fuelUsage));
             }
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get lists all motorcycles");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return motorcycles;
     }
 
 
     public static List<Bike> getFilteredBikes(String name, String color, String typeOfComparePriceMin,String typeOfComparePriceMax, double minPrice, double maxPrice,
-                                                  String typeOfCompareProductionYeatMin, String typeOfCompareProductionYeatMax, int minProductionYear, int maxProductionYear) throws ErrorMessageException {
+                                              String typeOfCompareProductionYeatMin, String typeOfCompareProductionYeatMax, int minProductionYear, int maxProductionYear,
+                                              VehicleStatus vehicleStatus, String vehicleID  ) throws ErrorMessageException {
         String query = "Select * from bikes ";
         if (!(name == null))
             query += "where name LIKE \"%" + name + "%\" ";
@@ -844,26 +911,35 @@ public class DatabaseManager  {
         if(!(typeOfCompareProductionYeatMax == null) && !(maxProductionYear == -1) && query.contains("where"))
             query += " AND productionYear " + typeOfCompareProductionYeatMax + " \"" + maxProductionYear + "\" ";
 
+        if (!(vehicleStatus == null) && !query.contains("where"))
+            query += " where vehicleStatus=\"" + vehicleStatus + "\" ";
+        if (!(vehicleStatus == null) && query.contains("where"))
+            query += " AND vehicleStatus=\"" + vehicleStatus + "\" ";
+
+        if (!(vehicleID == null) && !query.contains("where"))
+            query += " where id LIKE\"%" + vehicleID + "%\" ";
+        if (!(vehicleID == null) && query.contains("where"))
+            query += " AND id LIKE \"%" + vehicleID + "%\" ";
         List<Bike> bikes = new ArrayList<>();
         try {
             ResultSet result = stat.executeQuery(query);
             int productionYear; double dailyPrice;
-            String vehicleType, name_, color_, id, vehicleStatus;
+            String vehicleType, name_, color_, id, vehicleStatus_;
             while(result.next()) {
                 id = result.getString("id");
-                vehicleStatus = result.getString("vehicleStatus");
+                vehicleStatus_ = result.getString("vehicleStatus");
                 vehicleType = result.getString("vehicleType");
                 name_ = result.getString("name");
                 dailyPrice = result.getDouble("dailyPrice");
                 color_ = result.getString("color");
                 productionYear = result.getInt("productionYear");
 
-                bikes.add(new Bike(id, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name_, dailyPrice, Color.valueOf(color_), productionYear));
+                bikes.add(new Bike(id, VehicleStatus.valueOf(vehicleStatus_), VehicleType.valueOf(vehicleType), name_, dailyPrice, String.valueOf(color_), productionYear));
             }
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get lists all Bikes");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return bikes;
     }
@@ -873,7 +949,7 @@ public class DatabaseManager  {
         return getAllBikes(VehicleStatus.avaiable);
     }
 
-    public static List<Bike> getAllABorrowedBikes() throws ErrorMessageException{
+    public static List<Bike> getAllBorrowedBikes() throws ErrorMessageException{
         return getAllBikes(VehicleStatus.unavaiable);
     }
 
@@ -881,7 +957,7 @@ public class DatabaseManager  {
         return getAllBikes(VehicleStatus.archived);
     }
 
-    public static void addMotorcycle(String id, String name, double dailyPrice, Color color, int productionYear, int mileage, double engineCapacity, double fuelUsage)
+    public static void addMotorcycle(String id, String name, double dailyPrice, String color, int productionYear, int mileage, double engineCapacity, double fuelUsage)
             throws ErrorMessageException {
         try {
             PreparedStatement prepStmt;
@@ -893,7 +969,7 @@ public class DatabaseManager  {
             prepStmt.setString(3, VehicleType.motorcycle.name());
             prepStmt.setString(4, name);
             prepStmt.setDouble(5, dailyPrice);
-            prepStmt.setString(6, color.name());
+            prepStmt.setString(6, color);
             prepStmt.setInt(7, productionYear);
             prepStmt.setInt(8, mileage);
             prepStmt.setDouble(9, engineCapacity);
@@ -902,18 +978,18 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to add motorcycle");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Can't properly add motorcycle, contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
-    public static void updateMotorcycle(String id, String name, double dailyPrice, Color color, int productionYear,
+    public static void updateMotorcycle(String id, String name, double dailyPrice, String color, int productionYear,
                                         int mileage, double engineCapacity, double fuelUsage) throws ErrorMessageException{
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
                     "update motorcycles set" +
                             " name = " + "\"" + name + "\"" +
                             " ,dailyPrice = " +"\""  + dailyPrice + "\""  +
-                            " ,color = " + "\"" + color.name() +"\""  +
+                            " ,color = " + "\"" + color +"\""  +
                             ", productionYear = " + "\"" + productionYear + "\"" +
                             " ,mileage = " +"\""  + mileage +"\""  +
                             " ,engineCapacity = " +"\""  + engineCapacity +"\""  +
@@ -924,34 +1000,40 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to edit car ");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
     public static Motorcycle getMotorcycleByID (String motorcycleID) throws ErrorMessageException {
         ResultSet MotorcycleResult;
-        int productionYear, mileage;
-        double dailyPrice, engineCapacity, fuelUsage;
-        String name, vehicleStatus, vehicleType, color;
+        int productionYear = -1, mileage = -1;
+        double dailyPrice = -1, engineCapacity = -1, fuelUsage = -1;
+        String name = null, vehicleStatus = null, vehicleType = null, color = null, id = null;
         try {
             MotorcycleResult = stat.executeQuery("SELECT * FROM motorcycles where id=" + "\"" + motorcycleID + "\"" );
-            MotorcycleResult.next();
-            vehicleStatus = MotorcycleResult.getString("vehicleStatus");
-            vehicleType = MotorcycleResult.getString("vehicleType");
-            name = MotorcycleResult.getString("name");
-            dailyPrice = MotorcycleResult.getDouble("dailyPrice");
-            color = MotorcycleResult.getString("color");
-            productionYear = MotorcycleResult.getInt("productionYear");
-            mileage = MotorcycleResult.getInt("mileage");
-            engineCapacity = MotorcycleResult.getDouble("engineCapacity");
-            fuelUsage = MotorcycleResult.getDouble("fuelUsage");
+            while(MotorcycleResult.next()) {
+                id = MotorcycleResult.getString("id");
+                vehicleStatus = MotorcycleResult.getString("vehicleStatus");
+                vehicleType = MotorcycleResult.getString("vehicleType");
+                name = MotorcycleResult.getString("name");
+                dailyPrice = MotorcycleResult.getDouble("dailyPrice");
+                color = MotorcycleResult.getString("color");
+                productionYear = MotorcycleResult.getInt("productionYear");
+                mileage = MotorcycleResult.getInt("mileage");
+                engineCapacity = MotorcycleResult.getDouble("engineCapacity");
+                fuelUsage = MotorcycleResult.getDouble("fuelUsage");
+            }
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get motorcycle by motorcycleID");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
-        return new Motorcycle( motorcycleID, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name, dailyPrice,
-                Color.valueOf(color), productionYear, mileage, engineCapacity, fuelUsage);
+        if(id == null)
+            return new Motorcycle( id, VehicleStatus.archived, VehicleType.motorcycle, name, dailyPrice,
+                    color, productionYear, mileage, engineCapacity, fuelUsage);
+
+        return new Motorcycle( id, VehicleStatus.valueOf(vehicleStatus), VehicleType.valueOf(vehicleType), name, dailyPrice,
+                String.valueOf(color), productionYear, mileage, engineCapacity, fuelUsage);
     }
 
 
@@ -988,7 +1070,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to set vehicle inaccessible");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -1013,7 +1095,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to set vehicle accessible");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -1037,7 +1119,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to set vehicle accessible");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -1075,14 +1157,14 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to set vehicle accessible");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
-    public static void addEmployee(String firstName, String lastName, String address, int phoneNumber, String email, String login, String password, String salt) throws ErrorMessageException{
+    public static void addEmployee(String firstName, String lastName, String address, int phoneNumber, String email, String login, String password, String salt, boolean managerPermission) throws ErrorMessageException{
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
-                    "insert into employees( firstName, lastName, address, phoneNumber, email, status, login, password, salt) values (?,?,?,?,?,?,?,?,?);");
+                    "insert into employees( firstName, lastName, address, phoneNumber, email, status, login, password, salt, managerPermission) values (?,?,?,?,?,?,?,?,?,?);");
             prepStmt.setString(1, firstName);
             prepStmt.setString(2, lastName);
             prepStmt.setString(3, address);
@@ -1092,15 +1174,16 @@ public class DatabaseManager  {
             prepStmt.setString(7, login);
             prepStmt.setString(8, password);
             prepStmt.setString(9, salt);
+            prepStmt.setBoolean(10, managerPermission);
             prepStmt.execute();
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to add employee to database");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Can't properly add employee, contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
-    public static void editEmployee(int UUID, String firstName, String lastName, String address, int phoneNumber, String email) throws ErrorMessageException{
+    public static void editEmployee(int UUID, String firstName, String lastName, String address, int phoneNumber, String email, String login) throws ErrorMessageException{
         try {
             PreparedStatement prepStmt = conn.prepareStatement(
                     "update employees set" +
@@ -1109,42 +1192,94 @@ public class DatabaseManager  {
                             " ,address = " + "\"" + address +"\""  +
                             ", phoneNumber = " + "\"" + phoneNumber + "\"" +
                             " ,email = " +"\""  + email +"\""  +
+                            " ,login = " +"\""  + login +"\""  +
                             " where UUID= " + "\"" + UUID + "\" ");
 
             prepStmt.execute();
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to edit employee ");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
+        }
+    }
+    public static void editEmployee(int UUID, String firstName, String lastName, String address, int phoneNumber, String email, String login, String password, String salt) throws ErrorMessageException{
+        try {
+            PreparedStatement prepStmt = conn.prepareStatement(
+                    "update employees set" +
+                            " firstName = " + "\"" + firstName + "\"" +
+                            " ,lastName = " +"\""  + lastName + "\""  +
+                            " ,address = " + "\"" + address +"\""  +
+                            ", phoneNumber = " + "\"" + phoneNumber + "\"" +
+                            " ,email = " +"\""  + email +"\""  +
+                            " ,login = " +"\""  + login +"\""  +
+                            " ,password = " +"\""  + password +"\""  +
+                            " ,salt = " +"\""  + salt +"\""  +
+                            " where UUID= " + "\"" + UUID + "\" ");
+
+            prepStmt.execute();
+        } catch (SQLException e) {
+            Logs.logger.warning("Error when try to edit employee ");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
+        }
+    }
+
+    public static void setEmployeeActive(int UUID ) throws ErrorMessageException{
+        try {
+            PreparedStatement prepStmt = conn.prepareStatement(
+                    "update employees set" +
+                            " active = " + "\"" + 1 + "\"" +
+                            " where UUID= " + "\"" + UUID + "\" ");
+            prepStmt.execute();
+        } catch (SQLException e) {
+            Logs.logger.warning("Error when try to edit employee ");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
+        }
+    }
+
+    public static void setEmployeeInactive(int UUID ) throws ErrorMessageException{
+        try {
+            PreparedStatement prepStmt = conn.prepareStatement(
+                    "update employees set" +
+                                " active = " + "\"" + "0"+ "\"" +
+                            " where UUID= " + "\"" + UUID + "\" ");
+
+            prepStmt.execute();
+        } catch (SQLException e) {
+            Logs.logger.warning("Error when try to edit employee ");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
     public static List<Employee> getAllEmployees() throws ErrorMessageException{
         List<Employee> employees = new ArrayList<>();
-        String firstName, lastName, address, email;
+        String firstName, login,  lastName, address, email;
         int phoneNumber, UUID ;
         try {
             ResultSet result = stat.executeQuery("SELECT * FROM employees ");
             while (result.next()) {
                 UUID =  result.getInt("UUID");
+                login = result.getString("login");
                 firstName = result.getString("firstName");
                 lastName = result.getString("lastName");
                 address = result.getString("address");
                 phoneNumber = result.getInt("phoneNumber");
                 email = result.getString("email");
-                employees.add(new Employee(UUID, firstName, lastName, address, phoneNumber, email));
+                employees.add(new Employee(UUID, firstName, lastName, address, phoneNumber, email, login));
             }
         }catch(Exception e){
             Logs.logger.warning("Error when try to get all employees");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return employees;
     }
 
     public static List<Employee> getFilteredEmployees(String firstName, String lastName) throws ErrorMessageException {
         List<Employee> employees = new ArrayList<>();
-        String firstName_, lastName_, address, email;
+        String firstName_, lastName_, address, email, login;
         int phoneNumber, UUID ;
 
         String query = "SELECT * FROM employees  ";
@@ -1158,39 +1293,104 @@ public class DatabaseManager  {
             ResultSet result = stat.executeQuery(query);
             while (result.next()) {
                 UUID =  result.getInt("UUID");
+                login = result.getString("login");
                 firstName_ = result.getString("firstName");
                 lastName_ = result.getString("lastName");
                 address = result.getString("address");
                 phoneNumber = result.getInt("phoneNumber");
                 email = result.getString("email");
-                employees.add(new Employee(UUID, firstName_, lastName_, address, phoneNumber, email));
+                employees.add(new Employee(UUID, firstName_, lastName_, address, phoneNumber, email, login));
             }
         }catch(Exception e){
             Logs.logger.warning("Error when try to get list filetred employees");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return employees;
     }
 
     public static Employee getEmployeeByID(int UUID) throws ErrorMessageException{
-        String firstName, lastName, address, email;
+        String firstName, lastName, address, email, login;
         Employee employee = null;
         int phoneNumber;
         try {
             ResultSet result = stat.executeQuery("SELECT * FROM employees where UUID = " + "\"" + UUID + "\"");
             while (result.next()) {
+                login = result.getString("login");
                 firstName = result.getString("firstName");
                 lastName = result.getString("lastName");
                 address = result.getString("address");
                 phoneNumber = result.getInt("phoneNumber");
                 email = result.getString("email");
-                employee = new Employee(UUID, firstName, lastName, address, phoneNumber, email);
+                employee = new Employee(UUID, firstName, lastName, address, phoneNumber, email, login);
             }
         }catch(Exception e){
             Logs.logger.warning("Error when try to get employee by id ");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
+        }
+        return employee;
+    }
+
+    public static Employee getLoggedEmployee() throws ErrorMessageException{
+        String firstName, lastName, address, email, login;
+        Employee employee = null;
+        int phoneNumber, UUID;
+        try {
+            ResultSet result = stat.executeQuery("SELECT * FROM employees where active = " + "\"" + 1 + "\"");
+            while (result.next()) {
+                UUID = result.getInt("UUID");
+                login = result.getString("login");
+                firstName = result.getString("firstName");
+                lastName = result.getString("lastName");
+                address = result.getString("address");
+                phoneNumber = result.getInt("phoneNumber");
+                email = result.getString("email");
+                employee = new Employee(UUID, firstName, lastName, address, phoneNumber, email, login);
+            }
+        }catch(Exception e){
+            Logs.logger.warning("Error when try to get employee by id ");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
+        }
+        return employee;
+    }
+    public static boolean hasEmployeeManagerPermission(int UUID) throws ErrorMessageException{
+      boolean permission = false;
+        try {
+            ResultSet result = stat.executeQuery("SELECT * FROM employees where UUID = " + "\"" + UUID + "\"");
+            while (result.next()) {
+                permission = result.getBoolean("managerPermission");
+            }
+        }catch(Exception e){
+            Logs.logger.warning("Error when try to get employee permission");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
+        }
+        return permission;
+    }
+
+    public static Employee getEmployeeByLogin(String login) throws ErrorMessageException{
+        String firstName = null, lastName  = null, address = null, email = null, login_ = null;
+        Employee employee = null;
+        int phoneNumber = -1, UUID = -1;
+        try {
+            ResultSet result = stat.executeQuery("SELECT * FROM employees where login = " + "\"" + login + "\"");
+            while (result.next()) {
+                UUID = result.getInt("UUID");
+                login_ = result.getString("login");
+                firstName = result.getString("firstName");
+                lastName = result.getString("lastName");
+                address = result.getString("address");
+                phoneNumber = result.getInt("phoneNumber");
+                email = result.getString("email");
+            }
+            employee = new Employee(UUID, firstName, lastName, address, phoneNumber, email, login_);
+
+        }catch(Exception e){
+            Logs.logger.warning("Error when try to get employee by id ");
+            Logs.logger.warning(e.getMessage());
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return employee;
     }
@@ -1206,7 +1406,7 @@ public class DatabaseManager  {
         }catch(Exception e){
             Logs.logger.warning("Error when try to get password by login ");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return password;
     }
@@ -1221,7 +1421,7 @@ public class DatabaseManager  {
         }catch(Exception e){
             Logs.logger.warning("Error when try to get salt by login ");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return salt;
     }
@@ -1259,7 +1459,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get lists all customer");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return customers;
     }
@@ -1269,7 +1469,7 @@ public class DatabaseManager  {
         try {
             ResultSet result = stat.executeQuery("SELECT * FROM rents where status = \"" + rentStatus.name() + "\"");
             int id, employeeID; double priceForRent;
-            String typeOfVehicle, customerID, vehicleID;
+            String typeOfVehicle, customerID, vehicleID, status;
             Employee employee; Customer customer; Vehicle vehicle= null; Date dateOfRental, dateOfReturn;
             int x = 0;
             int resultSize = countSizeResultSet(result);
@@ -1286,6 +1486,7 @@ public class DatabaseManager  {
                 dateOfRental = result.getDate("startDate");
                 dateOfReturn = result.getDate("endDate");
                 employeeID = result.getInt("employeeID");
+                status = result.getString("status");
                 employee = getEmployeeByID(employeeID);
                 customer  = getCustomerByPesel(customerID);
 
@@ -1300,7 +1501,7 @@ public class DatabaseManager  {
                         vehicle = getMotorcycleByID(vehicleID);
                         break;
                 }
-                rent.add(new Rent(vehicle, customer, employee, id, priceForRent, dateOfRental, dateOfReturn));
+                rent.add(new Rent(vehicle, customer, employee, id, priceForRent, dateOfRental, dateOfReturn, RentStatus.valueOf(status)));
                 x++;
                 result = stat.executeQuery("SELECT * FROM rents where status = \"" + rentStatus.name() + "\"");
                 result.next();
@@ -1308,7 +1509,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get all rents");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return rent;
     }
@@ -1320,7 +1521,7 @@ public class DatabaseManager  {
         try {
             ResultSet result = stat.executeQuery(sql);
             int id, employeeID; double priceForRent;
-            String customerID, vehicleID, typeOfVehicle;
+            String customerID, vehicleID, typeOfVehicle, status;
             Employee employee; Customer customer; Vehicle vehicle = null; Date dateOfRental, dateOfReturn;
             int x = 0;
             int resultSize = countSizeResultSet(result);
@@ -1337,6 +1538,7 @@ public class DatabaseManager  {
                 dateOfRental = result.getDate("startDate");
                 dateOfReturn = result.getDate("endDate");
                 employeeID = result.getInt("employeeID");
+                status = result.getString("status");
                 employee = getEmployeeByID(employeeID);
                 customer  = getCustomerByPesel(customerID);
 
@@ -1351,7 +1553,7 @@ public class DatabaseManager  {
                         vehicle = getMotorcycleByID(vehicleID);
                         break;
                 }
-                rent.add(new Rent(vehicle, customer, employee, id, priceForRent, dateOfRental, dateOfReturn));
+                rent.add(new Rent(vehicle, customer, employee, id, priceForRent, dateOfRental, dateOfReturn, RentStatus.valueOf(status)));
                 x++;
                 result = stat.executeQuery(sql);
                 result.next();
@@ -1359,7 +1561,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get lists all customer rents");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return rent;
     }
@@ -1384,13 +1586,13 @@ public class DatabaseManager  {
                 numberOffPersons = result.getInt("numberOffPersons");
 
                 cars.add(new Car(id, vehicleStatus, VehicleType.valueOf(vehicleType), name, dailyPrice,
-                        Color.valueOf(color), productionYear, mileage, engineCapacity, fuelUsage, FuelType.valueOf(fuelType),
+                        String.valueOf(color), productionYear, mileage, engineCapacity, fuelUsage, FuelType.valueOf(fuelType),
                         numberOffPersons));
             }
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get lists all cars");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return cars;
     }
@@ -1410,17 +1612,15 @@ public class DatabaseManager  {
                 color = result.getString("color");
                 productionYear = result.getInt("productionYear");
 
-                bikes.add(new Bike(id, vehicleStatus, VehicleType.valueOf(vehicleType), name, dailyPrice, Color.valueOf(color), productionYear));
+                bikes.add(new Bike(id, vehicleStatus, VehicleType.valueOf(vehicleType), name, dailyPrice, String.valueOf(color), productionYear));
             }
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get lists all Bikes");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return bikes;
     }
-
-
 
     private static List<Motorcycle> getAllMotorcycles(VehicleStatus vehicleStatus) throws ErrorMessageException {
         List<Motorcycle> motorcycles = new ArrayList<>();
@@ -1441,12 +1641,12 @@ public class DatabaseManager  {
                 fuelUsage = result.getDouble("fuelUsage");
 
                 motorcycles.add(new Motorcycle(id, vehicleStatus, VehicleType.valueOf(vehicleType), name, dailyPrice,
-                        Color.valueOf(color), productionYear, mileage, engineCapacity, fuelUsage));
+                        String.valueOf(color), productionYear, mileage, engineCapacity, fuelUsage));
             }
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get lists all motorcycles");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
         return motorcycles;
     }
@@ -1459,7 +1659,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get price per day from cars table ");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -1471,7 +1671,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get price per day from bikes table ");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -1483,7 +1683,7 @@ public class DatabaseManager  {
         } catch (SQLException e) {
             Logs.logger.warning("Error when try to get price per day from motorcycles table ");
             Logs.logger.warning(e.getMessage());
-            throw new ErrorMessageException("Error, please contact with administrator");
+            throw new ErrorMessageException("Błąd systemu, skontaktuj się z administratorem");
         }
     }
 
@@ -1519,6 +1719,8 @@ public class DatabaseManager  {
             "login varchar(50) NOT NULL UNIQUE, " +
             "password varchar(70) NOT NULL, " +
             "salt varchar(700) NOT NULL, " +
+            "active int DEFAULT  NULL , " +
+            "managerPermission BOOLEAN NOT NULL , " +
             " PRIMARY KEY (UUID)" ;
 
     private static final String RentTableStruct = "(id  int NOT NULL AUTO_INCREMENT," +

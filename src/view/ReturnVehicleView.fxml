@@ -41,9 +41,9 @@
             <Label text="Nazwa firmy:" GridPane.rowIndex="6" />
             <Label text="NIP:" GridPane.rowIndex="7" />
             <Label text="Adres firmy:" GridPane.rowIndex="8" />
-            <TextField fx:id="customerFirstNameTextField" GridPane.columnIndex="1" />
-            <TextField fx:id="customerLastNameTextField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-            <TextField fx:id="peselTextField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+            <TextField fx:id="customerFirstNameTextField" disable="true" GridPane.columnIndex="1" />
+            <TextField fx:id="customerLastNameTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+            <TextField fx:id="peselTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
             <TextArea fx:id="customerAddressTextArea" prefHeight="200.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
                <GridPane.margin>
                   <Insets bottom="3.0" top="5.0" />

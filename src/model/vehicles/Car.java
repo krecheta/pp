@@ -1,6 +1,5 @@
 package model.vehicles;
 
-import model.enums.Color;
 import model.enums.FuelType;
 import model.enums.VehicleStatus;
 import model.enums.VehicleType;
@@ -13,7 +12,7 @@ public class Car extends Vehicle {
     private final int numberOffPersons;
 
     public Car(String id, VehicleStatus vehicleStatus, VehicleType vehicleType, String name, double dailyPrice,
-               Color color, int productionYear, int mileage, double engineCapacity, double fuelUsage, FuelType fuelType,
+               String color, int productionYear, int mileage, double engineCapacity, double fuelUsage, FuelType fuelType,
                int numberOffPersons) {
         super(id, vehicleStatus, vehicleType, name, dailyPrice, color, productionYear);
         this.mileage = mileage;
@@ -35,18 +34,6 @@ public class Car extends Vehicle {
         }
         fuelUsageProperty = String.valueOf(fuelUsage);
         numOfPersonsProperty = String.valueOf(numberOffPersons);
-    }
-
-    @Override
-    public String toString() {
-        return "{" +
-            super.toString() +
-            ", paliwo = " + this.fuelType +
-            ", pojemność silnika = " + this.engineCapacity +
-            ", przejechane kilometry = " + this.mileage +
-                ", zużycie paliwa = " + this.fuelUsage +
-            ", liczba osób = " + this.numberOffPersons+
-            '}';
     }
 
     public int getMileage() {return this.mileage; }

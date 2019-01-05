@@ -1,7 +1,6 @@
 package controller;
 
 import com.sun.javafx.scene.control.skin.TableHeaderRow;
-import com.sun.xml.internal.bind.v2.TODO;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -16,7 +15,6 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import model.enums.Color;
 import model.enums.FuelType;
 import model.enums.VehicleStatus;
 import model.enums.VehicleType;
@@ -51,7 +49,7 @@ public class VehiclesController implements Initializable {
     private TableColumn<Vehicle, Double> priceColumn;
 
     @FXML
-    private TableColumn<Vehicle, Color> colourColumn;
+    private TableColumn<Vehicle, String> colourColumn;
 
     @FXML
     private TableColumn<Vehicle, Integer> yearColumn;
@@ -288,6 +286,7 @@ public class VehiclesController implements Initializable {
             e.printStackTrace();
         }
         Scene scene = new Scene(parent);
+        scene.getStylesheets().add(this.getClass().getResource("../view/css/modena_dark.css").toExternalForm());
         Stage stage = new Stage();
         stage.setScene(scene);
         stage.setResizable(false);

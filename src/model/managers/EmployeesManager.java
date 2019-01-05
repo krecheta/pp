@@ -1,32 +1,46 @@
-package Model.ModelManagers;
+package model.managers;
 
-import DataBase.DatabaseManager;
-import Model.CustomExceptions.ErrorMessageException;
-import Model.Employee;
+import database.DatabaseManager;
+import model.exceptions.ErrorMessageException;
+import model.Employee;
 
 import java.util.List;
 
 public class EmployeesManager {
 
-    public void addEmployee(String firstName, String lastName, String address, int phoneNumber, String email, String login, String password) throws ErrorMessageException {
+    public void addEmployee(String firstName, String lastName, String address, int phoneNumber, String email, String login, String password, boolean managerPermission) throws ErrorMessageException {
         String salt = PasswordsManager.getSalt(30);
         String encrzptedPassword = encrypt(salt, password);
-        DatabaseManager.addEmployee(firstName, lastName, address, phoneNumber, email, login, encrzptedPassword, salt);
+        if(DatabaseManager.getEmployeeByLogin(login).getLogin() == null)
+                DatabaseManager.addEmployee(firstName, lastName, address, phoneNumber, email, login, encrzptedPassword, salt, managerPermission);
+        else
+            throw new ErrorMessageException("Pracownik o takim loginie już istnieje.");
     }
 
     public void editEmployee(Employee employee) throws  ErrorMessageException{
         Employee employeeBeforUpdate = getEmployeeById(employee.getUUID());
         if (employeeBeforUpdate == null)
-            throw new ErrorMessageException("Employee doesn't exist");
+            throw new ErrorMessageException("Pracownik nie istnieje");
 
         try{
             DatabaseManager.editEmployee(employee.getUUID(), employee.getFirstName(), employee.getLastName(), employee.getAddress(), employee.getPhoneNumber(),
-                                                employee.getEmail());
+                                                employee.getEmail(), employee.getLogin());
         }catch (Exception e){
             DatabaseManager.editEmployee(employee.getUUID(), employeeBeforUpdate.getFirstName(), employeeBeforUpdate.getLastName(), employeeBeforUpdate.getAddress(), employeeBeforUpdate.getPhoneNumber(),
-                                         employeeBeforUpdate.getEmail());
+                                         employeeBeforUpdate.getEmail(), employeeBeforUpdate.getLogin());
             throw e;
         }
+    }
+
+    public void editEmployee(Employee employee, String password) throws  ErrorMessageException{
+        Employee employeeBeforUpdate = getEmployeeById(employee.getUUID());
+
+        if (employeeBeforUpdate == null)
+            throw new ErrorMessageException("Employee doesn't exist");
+        String salt = PasswordsManager.getSalt(30);
+        String encrzptedPassword = encrypt(salt, password);
+            DatabaseManager.editEmployee(employee.getUUID(), employee.getFirstName(), employee.getLastName(), employee.getAddress(), employee.getPhoneNumber(),
+                    employee.getEmail(), employee.getLogin(), encrzptedPassword, salt);
     }
 
     public List<Employee> getAllEmployees() throws ErrorMessageException {
@@ -46,23 +60,12 @@ public class EmployeesManager {
          return PasswordsManager.generateSecurePassword(password, salt);
     }
 
-    public boolean checkEmployeePassword(String login, String providedPassword) throws ErrorMessageException {
-    // Encrypted and Base64 encoded password read from database
-        String securePassword = DatabaseManager.getPassword(login);
-    // Salt read from database
-        String salt = DatabaseManager.getSalt(login);
+    public boolean hasLoggedEmployeeManagerPermission() throws ErrorMessageException {
+        Employee loggedEmployee = DatabaseManager.getLoggedEmployee();
+        return DatabaseManager.hasEmployeeManagerPermission(loggedEmployee.getUUID());
+    }
 
-        if (login == null)
-            return false;
-        if (providedPassword == null)
-            return false;
-        if (securePassword == null)
-            return false;
-        if (salt == null)
-            return false;
-        if (PasswordsManager.verifyUserPassword(providedPassword, securePassword, salt))
-            return true;
-        else
-            return false;
+    public Employee getLoggedEmployee() throws ErrorMessageException {
+        return DatabaseManager.getLoggedEmployee();
     }
 }

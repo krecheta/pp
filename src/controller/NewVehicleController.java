@@ -10,7 +10,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.StageStyle;
-import model.enums.Color;
 import model.enums.FuelType;
 import model.enums.VehicleStatus;
 import model.enums.VehicleType;
@@ -184,14 +183,14 @@ public class NewVehicleController implements Initializable {
                     fuelType = FuelType.gas;
                 }
 
-                newVehicle = new Car(id, VehicleStatus.avaiable, VehicleType.car, name, price, Color.czerwony, prodYear,
+                newVehicle = new Car(id, VehicleStatus.avaiable, VehicleType.car, name, price, "czerwony", prodYear,
                         (int) mileage, engCapacity, fuelUsage, fuelType, numOfPeople);
             } else {
-                newVehicle = new Motorcycle(id, VehicleStatus.avaiable, VehicleType.car, name, price, Color.czerwony, prodYear,
+                newVehicle = new Motorcycle(id, VehicleStatus.avaiable, VehicleType.car, name, price, "czerwony", prodYear,
                         (int) mileage, engCapacity, fuelUsage);
             }
         } else {
-            newVehicle = new Bike(id, VehicleStatus.avaiable, VehicleType.car, name, price, Color.czerwony, prodYear);
+            newVehicle = new Bike(id, VehicleStatus.avaiable, VehicleType.car, name, price, "czerwomy", prodYear);
         }
 
         Alert errorAlert = new Alert(Alert.AlertType.ERROR);

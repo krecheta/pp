@@ -7,28 +7,21 @@ public class Employee {
     private final String address;
     private final int phoneNumber;
     private final String email;
-    //login haslo
-
-
+    private final String login;
 
     @Override
     public String toString() {
-        return   "{UUID = " + this.UUID +
-                ", imię = " + this.firstName +
-                ", nazwisko = " + this.lastName +
-                ", numer telefonu = " + this.phoneNumber +
-                ", adres = " + this.address +
-                ", email = " + this.email +
-                '}';
+        return firstName + " " + lastName;
     }
 
-    public Employee(int UUID, String firstName, String lastName, String address, int phoneNumber, String email) {
+    public Employee(int UUID, String firstName, String lastName, String address, int phoneNumber, String email, String login) {
         this.UUID = UUID;
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.phoneNumber = phoneNumber;
         this.email = email;
+        this.login = login;
     }
 
     public int getUUID() {return this.UUID; }
@@ -37,4 +30,5 @@ public class Employee {
     public String getAddress() { return this.address; }
     public int getPhoneNumber() { return this.phoneNumber;}
     public String getEmail() { return this.email; }
+    public String getLogin() { return login; }
 }

@@ -1,19 +1,19 @@
-package Model.ModelManagers;
+package model.managers;
 
-import DataBase.DatabaseManager;
-import Model.CustomEnumValues.VehicleStatus;
-import Model.CustomEnumValues.VehicleType;
-import Model.CustomExceptions.ErrorMessageException;
-import Model.Customer;
-import Model.Employee;
-import Model.Logs;
-import Model.Rent;
-import Model.Vehicles.Vehicle;
-import java.text.ParseException;
+import database.DatabaseManager;
+import model.enums.RentStatus;
+import model.enums.VehicleStatus;
+import model.enums.VehicleType;
+import model.exceptions.ErrorMessageException;
+import model.Customer;
+import model.Employee;
+import model.Rent;
+import model.vehicles.Vehicle;
+
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 
@@ -46,7 +46,7 @@ public class RentsManager {
               }
               DatabaseManager.addRent(customer.getPeselNumber(), vehicleID, typeOfVehicle, priceForRent, startDate, endDate, employee.getUUID());
           } else
-              throw new ErrorMessageException("Vehicle is inaccessible");
+              throw new ErrorMessageException("Pojazd jest niedostepny");
     }
 
     public void endRent(Rent rent, long mileage, double addCosts) throws ErrorMessageException {
@@ -55,10 +55,16 @@ public class RentsManager {
         DatabaseManager.markRentAsArchival(rent.getRentID());
         DatabaseManager.setVehicleAvaiable(rent.getVehicle().getId(), rent.getVehicle().getVehicleType());
         DatabaseManager.updateVehicleMileage(rent.getVehicle().getId(), rent.getTypeOfVehicle(), mileage);
-        double additional = additionalPayment(rentFromDatabase);
-        double totalPriceForRent = (double)Math.round((rentFromDatabase.getPriceForRent() + additional + addCosts)* 100) / 100;
-        if(additional > 0)
-            DatabaseManager.updateRentDate(rent.getRentID(), returnDate);
+        double totalPriceForRent;
+        if(new Date().before(rentFromDatabase.getEndDate()))
+            totalPriceForRent = (double) Math.round((calculatePriceForRent(rentFromDatabase.getCustomer(), rentFromDatabase.getVehicle(), rentFromDatabase.getStartDate(), new Date())  + addCosts) * 100) / 100;
+
+        else {
+            double additional = additionalPayment(rentFromDatabase);
+            totalPriceForRent = (double)Math.round((rentFromDatabase.getTotalPrice() + additional + addCosts)* 100) / 100;
+        }
+
+        DatabaseManager.updateRentDate(rent.getRentID(), returnDate);
         DatabaseManager.updateRentPrice(rent.getRentID(),  totalPriceForRent);
         DatabaseManager.updateCustomerSumPaid(rent.getCustomer().getPeselNumber(), rent.getCustomer().getSumPaidForAllRents() + totalPriceForRent);
 
@@ -82,13 +88,23 @@ public class RentsManager {
     }
 
 
-    public List<Rent> getFilteredRents(String vehicleID, String peselNumber, int employeeID, String rentTypeStartMin, String rentTypeStartMax , java.sql.Date startDateMin,  java.sql.Date startDateMax,
-                                       String rentTypeEndMin, String rentTypeMax,  java.sql.Date endDateMin,  java.sql.Date endDateMax, String costTypeMin, String costTypeMax, double costMin, double costMax) throws ErrorMessageException {
+    public List<Rent> getFilteredRents(String vehicleID, String peselNumber, int employeeID, String rentTypeStartMin, String rentTypeStartMax , java.sql.Date startDateMin, java.sql.Date startDateMax,
+                                       String rentTypeEndMin, String rentTypeMax, java.sql.Date endDateMin, java.sql.Date endDateMax, String costTypeMin, String costTypeMax,
+                                       double costMin, double costMax, String vehicleName, String customerLastName, String employeeLastName, RentStatus rentStatus) throws ErrorMessageException {
+        List<Rent> filteredRents = new ArrayList<>();
 
-        return DatabaseManager.getFilteredRents(vehicleID, peselNumber, employeeID, rentTypeStartMin, rentTypeStartMax ,startDateMin, startDateMax,
-                                                rentTypeEndMin, rentTypeMax, endDateMin, endDateMax, costTypeMin, costTypeMax, costMin, costMax);
+        List<Rent> rents = DatabaseManager.getFilteredRents(vehicleID, peselNumber, employeeID, rentTypeStartMin, rentTypeStartMax, startDateMin, startDateMax,
+                rentTypeEndMin, rentTypeMax, endDateMin, endDateMax, costTypeMin, costTypeMax, costMin, costMax,
+                customerLastName, employeeLastName, rentStatus);
+        if (vehicleName != null) {
+            for (Rent x : rents) {
+                if (x.getVehicle().getName().contains(vehicleName))
+                    filteredRents.add(x);
+            }
+            return filteredRents;
+        }
+    return rents;
     }
-
 
     private double additionalPayment(Rent rent){
         SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy");

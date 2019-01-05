@@ -1,7 +1,5 @@
 package model.vehicles;
 
-import model.enums.Color;
-import model.enums.FuelType;
 import model.enums.VehicleStatus;
 import model.enums.VehicleType;
 
@@ -11,10 +9,10 @@ public abstract class Vehicle {
     private final VehicleType vehicleType;
     private final String name;
     private final double dailyPrice;
-    private final Color color;
+    private final String color;
     private final int productionYear;
 
-    public Vehicle(String id, VehicleStatus vehicleStatus, VehicleType vehicleType, String name, double dailyPrice, Color color, int productionYear) {
+    public Vehicle(String id, VehicleStatus vehicleStatus, VehicleType vehicleType, String name, double dailyPrice, String color, int productionYear) {
         this.id = id;
         this.vehicleStatus = vehicleStatus;
         this.vehicleType = vehicleType;
@@ -42,12 +40,7 @@ public abstract class Vehicle {
 
     @Override
     public String toString() {
-   return  "id = " + this.id +
-           ", nazwa = " + this.name +
-           ", kolor = " + this.color +
-           ", rok produkcji = " + this.productionYear +
-           ", dostepnosc = "  + this.vehicleStatus.toString() +
-           ", cena za dzien = " + this.dailyPrice;
+        return name;
     }
 
     public String getId() {
@@ -61,9 +54,8 @@ public abstract class Vehicle {
     public double getDailyPrice() {
         return this.dailyPrice;
     }
-    public Color getColor() { return this.color; }
+    public String getColor() { return this.color; }
     public int getProductionYear() { return this.productionYear; }
-
 
     protected String statusProperty;
     protected String typeProperty;

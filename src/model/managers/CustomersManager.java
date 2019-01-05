@@ -1,23 +1,25 @@
-package Model.ModelManagers;
+package model.managers;
 
-import DataBase.DatabaseManager;
-import Model.CustomExceptions.ErrorMessageException;
-import Model.Customer;
+import database.DatabaseManager;
+import model.exceptions.ErrorMessageException;
+import model.Customer;
 import java.util.List;
 
 public class CustomersManager {
 
     public void addCustomer(String firstName, String lastName, String peselNumber, String address, int phoneNumber, String email, String companyName,
                              String nipNumber, String companyAddress) throws ErrorMessageException {
-
-        DatabaseManager.addCustomer(firstName, lastName, peselNumber, address, phoneNumber, email, companyName,
+        if(DatabaseManager.getCustomerByPesel(peselNumber).getPeselNumber() == null)
+            DatabaseManager.addCustomer(firstName, lastName, peselNumber, address, phoneNumber, email, companyName,
                                     nipNumber, companyAddress);
+         else
+             throw new ErrorMessageException("Klient o podanym numerze pesel już istnieje.");
     }
 
     public void editCustomer(Customer customer) throws ErrorMessageException{
         Customer customerBeforUpdate = getCustomerByPesel(customer.getPeselNumber());
         if (customer == null)
-            throw new ErrorMessageException("Client doesn't exist");
+            throw new ErrorMessageException("Klient nie istnieje");
 
         try{
             DatabaseManager.editCustomer(customer.getFirstName(), customer.getLastName(), customer.getPeselNumber(), customer.getAddress(), customer.getPhoneNumber(),
@@ -53,7 +55,7 @@ public class CustomersManager {
     public void transferCustomerToArchivalCustomers(String peselNumber) throws ErrorMessageException {
         Customer client = getCustomerByPesel(peselNumber);
         if (client == null)
-            throw new ErrorMessageException("Client doesn't exist");
+            throw new ErrorMessageException("Klient nie istnieje");
 
         DatabaseManager.markCustomerAsArchival(peselNumber);
     }

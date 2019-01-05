@@ -5,15 +5,18 @@ import model.exceptions.ErrorMessageException;
 import model.Employee;
 import model.Logs;
 import model.managers.EmployeesManager;
+import model.managers.PasswordsManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
+import javax.xml.crypto.Data;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class EmployeesManagerTest {
     static EmployeesManager employeeManager;
+
     @AfterEach
     void closeDatabaseConnection() {
 
@@ -21,7 +24,7 @@ class EmployeesManagerTest {
     }
 
     @org.junit.jupiter.api.BeforeAll
-    static void setupLogger(){
+    static void setupLogger() {
         new Logs();
         employeeManager = new EmployeesManager();
     }
@@ -33,74 +36,96 @@ class EmployeesManagerTest {
 
     @Test
     void addEmployee() throws ErrorMessageException {
-        employeeManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email1","1","");
-        employeeManager.addEmployee("Zbyszek", "Dawidziak", "addres",888777666, "email2","2","");
+        employeeManager.addEmployee("Dawid", "Dawidziak", "addres", 888777666, "email1", "1", "", false);
+        employeeManager.addEmployee("Zbyszek", "Dawidziak", "addres", 888777666, "email2", "2", "", false);
         String response1 = "{UUID = 1, imię = Dawid, nazwisko = Dawidziak, numer telefonu = 888777666, adres = addres, email = email1}";
         String response2 = "{UUID = 2, imię = Zbyszek, nazwisko = Dawidziak, numer telefonu = 888777666, adres = addres, email = email2}";
 
         List<Employee> employeeList = DatabaseManager.getAllEmployees();
         assertEquals(2, employeeList.size());
-        assertEquals(response1, employeeList.get(0).toString());
-        assertEquals(response2, employeeList.get(1).toString());
+        assertEquals("Dawid Dawidziak", employeeList.get(0).toString());
+        assertEquals("Zbyszek Dawidziak", employeeList.get(1).toString());
+    }
+
+    @Test
+    void addTwoSameEmployee() throws ErrorMessageException {
+        employeeManager.addEmployee("Dawid", "Dawidziak", "addres", 888777666, "email1", "1", "", false);
+        try {
+            employeeManager.addEmployee("Dawid", "Dawidziak", "addres", 888777666, "email1", "1", "", false);
+            assertEquals(true, false);
+        } catch (ErrorMessageException e) {
+            assertEquals("Pracownik o takim loginie już istnieje.", e.getMessage());
+        }
     }
 
     @Test
     void editEmployee() throws ErrorMessageException {
-        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email1","1", "", "");
-        Employee employee = new Employee(1,"Dawidziak", "Dawidziak", "addres",888777666, "email1");
-        String response1 = "{UUID = 1, imię = Dawidziak, nazwisko = Dawidziak, numer telefonu = 888777666, adres = addres, email = email1}";
+        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres", 888777666, "email1", "1", "", "", false);
+        Employee employee = new Employee(1, "Dawidziak", "Dawidziak", "addres", 888777666, "email1", null);
 
         employeeManager.editEmployee(employee);
         List<Employee> employeeList = DatabaseManager.getAllEmployees();
         assertEquals(1, employeeList.size());
-        assertEquals(response1, employeeList.get(0).toString());
+        assertEquals("Dawidziak Dawidziak", employeeList.get(0).toString());
+    }
+
+    @Test
+    void editEmployeeWithPassword() throws ErrorMessageException {
+
+        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres", 888777666, "email1", "login", "dominik", "", false);
+        Employee employee = new Employee(1, "Dawidziak", "Dawidziak", "addres", 888777666, "email1", "login2");
+        DatabaseManager.addEmployee("X", "X", "addres", 888777666, "email1", "X", "", "", false);
+
+        employeeManager.editEmployee(employee, "password");
+        List<Employee> employeeList = DatabaseManager.getAllEmployees();
+        assertEquals(2, employeeList.size());
+        assertEquals("Dawidziak Dawidziak", employeeList.get(0).toString());
+        assertEquals("login2", employeeList.get(0).getLogin());
+        PasswordsManager.loginEmployee("login2", "password");
+        assertEquals("Dawidziak Dawidziak", DatabaseManager.getLoggedEmployee().toString());
     }
 
     @Test
     void getAllEmployees() throws ErrorMessageException {
-        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email1","1", "", "");
-        DatabaseManager.addEmployee("Janek", "Dawidziak", "addres",888777666, "email1","2", "", "");
+        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres", 888777666, "email1", "1", "", "", false);
+        DatabaseManager.addEmployee("Janek", "Dawidziak", "addres", 888777666, "email1", "2", "", "", false);
 
         List<Employee> employeeList = employeeManager.getAllEmployees();
-        String response1 = "{UUID = 1, imię = Dawid, nazwisko = Dawidziak, numer telefonu = 888777666, adres = addres, email = email1}";
-        String response2 = "{UUID = 2, imię = Janek, nazwisko = Dawidziak, numer telefonu = 888777666, adres = addres, email = email1}";
 
         assertEquals(2, employeeList.size());
-        assertEquals(response1, employeeList.get(0).toString());
-        assertEquals(response2, employeeList.get(1).toString());
+        assertEquals("Dawid Dawidziak", employeeList.get(0).toString());
+        assertEquals("Janek Dawidziak", employeeList.get(1).toString());
     }
 
     @Test
     void getEmployeeById() throws ErrorMessageException {
-        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres",888777666, "email1","1", "", "");
-        DatabaseManager.addEmployee("Janek", "Dawidziak", "addres",888777666, "email1","2", "", "");
+        DatabaseManager.addEmployee("Dawid", "Dawidziak", "addres", 888777666, "email1", "1", "", "", false);
+        DatabaseManager.addEmployee("Janek", "Dawidziak", "addres", 888777666, "email1", "2", "", "", false);
         String response1 = "{UUID = 1, imię = Dawid, nazwisko = Dawidziak, numer telefonu = 888777666, adres = addres, email = email1}";
         String response2 = "{UUID = 2, imię = Janek, nazwisko = Dawidziak, numer telefonu = 888777666, adres = addres, email = email1}";
 
         Employee employee1 = employeeManager.getEmployeeById(1);
         Employee employee2 = employeeManager.getEmployeeById(2);
-        assertEquals(response1, employee1.toString());
-        assertEquals(response2, employee2.toString());
+        assertEquals("Dawid Dawidziak", employee1.toString());
+        assertEquals("Janek Dawidziak", employee2.toString());
     }
 
     @Test
     void getFilteredEmployees() throws ErrorMessageException {
-        DatabaseManager.addEmployee("Dawid", "Dawidzin", "addres",888777666, "email1", "1", "", "");
-        DatabaseManager.addEmployee("Janek", "Dawidziak", "addres",888777666, "email1", "2", "", "");
-        String response1 = "{UUID = 1, imię = Dawid, nazwisko = Dawidzin, numer telefonu = 888777666, adres = addres, email = email1}";
-        String response2 = "{UUID = 2, imię = Janek, nazwisko = Dawidziak, numer telefonu = 888777666, adres = addres, email = email1}";
+        DatabaseManager.addEmployee("Dawid", "Dawidzin", "addres", 888777666, "email1", "1", "", "", false);
+        DatabaseManager.addEmployee("Janek", "Dawidziak", "addres", 888777666, "email1", "2", "", "", false);
 
         List<Employee> employees = employeeManager.getFilteredEmployees("Dawid", null);
         assertEquals(1, employees.size());
-        assertEquals(response1, employees.get(0).toString());
+        assertEquals("Dawid Dawidzin", employees.get(0).toString());
 
         employees = employeeManager.getFilteredEmployees("Dawid", null);
         assertEquals(1, employees.size());
-        assertEquals(response1, employees.get(0).toString());
+        assertEquals("Dawid Dawidzin", employees.get(0).toString());
 
         employees = employeeManager.getFilteredEmployees(null, "ak");
         assertEquals(1, employees.size());
-        assertEquals(response2, employees.get(0).toString());
+        assertEquals("Janek Dawidziak", employees.get(0).toString());
 
         employees = employeeManager.getFilteredEmployees("a", "wid");
         assertEquals(2, employees.size());
@@ -113,27 +138,118 @@ class EmployeesManagerTest {
     }
 
     @Test
-    void checkPassword() throws ErrorMessageException {
-        employeeManager.addEmployee("Dawid", "Dawidzin", "addres",888777666, "email1", "login1", "abcdefghijk");
-        employeeManager.addEmployee("Janek", "Dawidziak", "addres",888777666, "email1", "login2", "qwertyuiop");
-        try{
-            employeeManager.addEmployee("Janek", "Dawidziak", "addres",888777666, "email1", "login2", "das");
-        assertEquals(false, true);
-        }catch (ErrorMessageException e){
-            assertEquals("Can't properly add employee, contact with administrator", e.getMessage());
+    void login() throws ErrorMessageException {
+        employeeManager.addEmployee("Dawid", "Dawidzin", "addres", 888777666, "email1", "login1", "abcdefghijk", false);
+        employeeManager.addEmployee("Janek", "Dawidziak", "addres", 888777666, "email1", "login2", "qwertyuiop", false);
+        try {
+            employeeManager.addEmployee("Janek", "Dawidziak", "addres", 888777666, "email1", "login2", "das", false);
+            assertEquals(false, true);
+        } catch (ErrorMessageException e) {
+            assertEquals("Pracownik o takim loginie już istnieje.", e.getMessage());
         }
 
-        assertEquals(true, employeeManager.checkEmployeePassword("login1", "abcdefghijk"));
-        assertEquals(true, employeeManager.checkEmployeePassword("login2", "qwertyuiop"));
-        assertEquals(false, employeeManager.checkEmployeePassword("login2", "abcdefghijk"));
-        assertEquals(false, employeeManager.checkEmployeePassword("login1", "qwertyuiop"));
-        assertEquals(false, employeeManager.checkEmployeePassword(null, "qwertyuiop"));
-        assertEquals(false, employeeManager.checkEmployeePassword("asdad", "qwertyuiop"));
-        assertEquals(false, employeeManager.checkEmployeePassword("login1", "asada"));
-        assertEquals(false, employeeManager.checkEmployeePassword("login2", "asdasdsa"));
-        assertEquals(false, employeeManager.checkEmployeePassword("login2", null));
-        assertEquals(false, employeeManager.checkEmployeePassword("login1", null));
-        assertEquals(false, employeeManager.checkEmployeePassword("login1", "aBcdefghiJk"));
-        assertEquals(false, employeeManager.checkEmployeePassword("login2", "qwertyuioP"));
+        try {
+            PasswordsManager.loginEmployee("login1", "abcdefghijk");
+            assertEquals(true, true);
+        } catch (ErrorMessageException e) {
+            assertEquals(false, true);
+        }
+
+
+        try {
+            PasswordsManager.loginEmployee("login1", "qwertyuiop");
+            assertEquals(false, true);
+        } catch (ErrorMessageException e) {
+            assertEquals("Błędny login bądz hasło.", e.getMessage());
+        }
+
+        try {
+            PasswordsManager.loginEmployee("login2", "abcdefghijk");
+            assertEquals(true, true);
+        } catch (ErrorMessageException e) {
+            assertEquals("Błędny login bądz hasło.", e.getMessage());
+        }
+    }
+
+    @Test
+    void setEmployeeLogged() throws ErrorMessageException {
+        employeeManager.addEmployee("Dawid", "Dawidzin", "addres", 888777666, "email1", "login1", "abcdefghijk", false);
+        employeeManager.addEmployee("Dawid2", "Dawidzin2", "addres", 888777666, "email1", "login2", "abcdefghijk", false);
+
+        PasswordsManager.loginEmployee("login1", "abcdefghijk");
+        assertEquals("Dawid Dawidzin", DatabaseManager.getLoggedEmployee().toString());
+    }
+
+    @Test
+    void logoutEmployee() throws ErrorMessageException {
+        employeeManager.addEmployee("Dawid", "Dawidzin", "addres", 888777666, "email1", "login1", "abcdefghijk", false);
+        employeeManager.addEmployee("Dawid2", "Dawidzin2", "addres", 888777666, "email1", "login2", "abcdefghijk", false);
+        Employee employee = new Employee(1,"Dawid", "Dawidzin", "addres", 888777666, "email1", "login1");
+        Employee employee2 = new Employee(2,"Dawid", "Dawidzin", "addres", 888777666, "email1", "login1");
+
+        PasswordsManager.loginEmployee("login1", "abcdefghijk");
+        PasswordsManager.logoutEmployee(employee);
+        assertEquals(null, DatabaseManager.getLoggedEmployee());
+        PasswordsManager.loginEmployee("login2", "abcdefghijk");
+        assertEquals("Dawid2 Dawidzin2", DatabaseManager.getLoggedEmployee().toString());
+        PasswordsManager.logoutEmployee(employee2);
+    }
+
+    @Test
+    void checkLoggedEmployee() throws ErrorMessageException {
+        employeeManager.addEmployee("Dawid", "Dawidzin", "addres", 888777666, "email1", "login1", "abcdefghijk", false);
+        employeeManager.addEmployee("Dawid2", "Dawidzin2", "addres", 888777666, "email1", "login2", "abcdefghijk", false);
+        employeeManager.addEmployee("Dawid3", "Dawidzin3", "addres", 888777666, "email1", "login3", "abcdefghijk", false);
+
+        Employee employee = new Employee(1,"Dawid", "Dawidzin", "addres", 888777666, "email1", "login1");
+        Employee employee2 = new Employee(2,"Dawid", "Dawidzin", "addres", 888777666, "email1", "login1");
+
+        PasswordsManager.loginEmployee("login1", "abcdefghijk");
+        PasswordsManager.logoutEmployee(employee);
+        assertEquals(null, employeeManager.getLoggedEmployee());
+        PasswordsManager.loginEmployee("login2", "abcdefghijk");
+        assertEquals("Dawid2 Dawidzin2", employeeManager.getLoggedEmployee().toString());
+        PasswordsManager.logoutEmployee(employee2);
+
+        PasswordsManager.loginEmployee("login1", "abcdefghijk");
+        PasswordsManager.loginEmployee("login2", "abcdefghijk");
+        assertEquals("Dawid2 Dawidzin2", employeeManager.getLoggedEmployee().toString());
+
+
+        PasswordsManager.loginEmployee("login3", "abcdefghijk");
+        assertEquals("Dawid3 Dawidzin3", employeeManager.getLoggedEmployee().toString());
+
+        PasswordsManager.loginEmployee("login1", "abcdefghijk");
+        assertEquals("Dawid Dawidzin", employeeManager.getLoggedEmployee().toString());
+    }
+
+
+    @Test
+    void hasLoggedEmployeeManagerPermission() throws ErrorMessageException {
+        employeeManager.addEmployee("Dawid", "Dawidzin", "addres", 888777666, "email1", "login1", "abcdefghijk", false);
+        employeeManager.addEmployee("Dawid2", "Dawidzin2", "addres", 888777666, "email1", "login2", "abcdefghijk", true);
+        employeeManager.addEmployee("Dawid3", "Dawidzin3", "addres", 888777666, "email1", "login3", "abcdefghijk", false);
+        employeeManager.addEmployee("Dawid4", "Dawidzin4", "addres", 888777666, "email1", "login4", "abcdefghijk", true);
+
+        Employee employee = new Employee(1,"Dawid", "Dawidzin", "addres", 888777666, "email1", "login1");
+        Employee employee2 = new Employee(2,"Dawid", "Dawidzin", "addres", 888777666, "email1", "login1");
+        Employee employee3 = new Employee(3,"Dawid", "Dawidzin", "addres", 888777666, "email1", "login1");
+        Employee employee4 = new Employee(4,"Dawid", "Dawidzin", "addres", 888777666, "email1", "login1");
+
+        PasswordsManager.loginEmployee("login1", "abcdefghijk");
+        assertEquals(false, employeeManager.hasLoggedEmployeeManagerPermission());
+        PasswordsManager.logoutEmployee(employee);
+
+        PasswordsManager.loginEmployee("login2", "abcdefghijk");
+        assertEquals(true, employeeManager.hasLoggedEmployeeManagerPermission());
+        PasswordsManager.logoutEmployee(employee2);
+
+        PasswordsManager.loginEmployee("login3", "abcdefghijk");
+        assertEquals(false, employeeManager.hasLoggedEmployeeManagerPermission());
+        PasswordsManager.logoutEmployee(employee3);
+
+        PasswordsManager.loginEmployee("login4", "abcdefghijk");
+        assertEquals(true, employeeManager.hasLoggedEmployeeManagerPermission());
+        PasswordsManager.logoutEmployee(employee4);
     }
 }

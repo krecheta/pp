@@ -13,17 +13,17 @@
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 
-<AnchorPane prefHeight="520.0" prefWidth="707.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
+<AnchorPane prefHeight="520.0" prefWidth="707.0" stylesheets="@css/modena_dark.css" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainController">
    <children>
       <TableView fx:id="rentsTableView" layoutX="16.0" layoutY="99.0" prefHeight="259.0" prefWidth="675.0">
         <columns>
-          <TableColumn editable="false" prefWidth="122.66665649414062" text="Pojazd" />
-          <TableColumn editable="false" prefWidth="110.0" text="Klient" />
-            <TableColumn prefWidth="110.0" text="Pracownik" />
-            <TableColumn editable="false" prefWidth="105.0" text="Data wypożyczenia" />
-            <TableColumn editable="false" prefWidth="105.0" text="Data zwrotu" />
-            <TableColumn editable="false" prefWidth="60.0" text="Status" />
-            <TableColumn editable="false" prefWidth="60.0" text="Koszt" />
+          <TableColumn fx:id="vehicleColumn" editable="false" prefWidth="122.66665649414062" text="Pojazd" />
+          <TableColumn fx:id="customerColumn" editable="false" prefWidth="110.0" text="Klient" />
+            <TableColumn fx:id="employeeColumn" prefWidth="110.0" text="Pracownik" />
+            <TableColumn fx:id="startDateColumn" editable="false" prefWidth="105.0" text="Data wypożyczenia" />
+            <TableColumn fx:id="endDateColumn" editable="false" prefWidth="105.0" text="Data zwrotu" />
+            <TableColumn fx:id="statusColumn" editable="false" prefWidth="60.0" text="Status" />
+            <TableColumn fx:id="priceColumn" editable="false" prefWidth="60.0" text="Koszt" />
         </columns>
          <contextMenu>
             <ContextMenu>

@@ -9,20 +9,21 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="493.0" prefWidth="756.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane prefHeight="493.0" prefWidth="756.0" xmlns="http://javafx.com/javafx/10.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.VehicleChoiceController">
     <children>
         <TableView fx:id="vehiclesTableView" layoutX="14.0" layoutY="14.0" prefHeight="276.0" prefWidth="731.0">
             <columns>
-                <TableColumn prefWidth="150.6666612625122" text="Nazwa" />
-                <TableColumn prefWidth="60.66668701171875" text="Rodzaj" />
-                <TableColumn prefWidth="42.666656494140625" text="Koszt" />
-                <TableColumn prefWidth="55.99993896484375" text="Kolor" />
-                <TableColumn prefWidth="56.6666259765625" text="Rok produkcji" />
-                <TableColumn prefWidth="77.99993896484375" text="Przebieg [km]" />
-                <TableColumn prefWidth="65.3333740234375" text="Pojemność silnika" />
-                <TableColumn prefWidth="82.0" text="Rodzaj paliwa" />
-                <TableColumn prefWidth="63.3333740234375" text="Spalanie" />
-                <TableColumn prefWidth="76.66668701171875" text="Liczba osób" />
+                <TableColumn fx:id="nameColumn" prefWidth="150.6666612625122" text="Nazwa" />
+            <TableColumn fx:id="idColumn" prefWidth="75.0" text="Nr rej," />
+                <TableColumn fx:id="typeColumn" prefWidth="60.66668701171875" text="Rodzaj" />
+                <TableColumn fx:id="priceColumn" prefWidth="42.666656494140625" text="Koszt" />
+                <TableColumn fx:id="colourColumn" prefWidth="55.99993896484375" text="Kolor" />
+                <TableColumn fx:id="yearColumn" prefWidth="56.6666259765625" text="Rok produkcji" />
+                <TableColumn fx:id="mileageColumn" prefWidth="65.0" text="Przebieg [km]" />
+                <TableColumn fx:id="engCapacityColumn" prefWidth="50.0" text="Pojemność silnika" />
+                <TableColumn fx:id="fuelTypeColumn" prefWidth="72.0" text="Rodzaj paliwa" />
+                <TableColumn fx:id="fuelUsageColumn" prefWidth="50.0" text="Spalanie" />
+                <TableColumn fx:id="numOfPersonsColumn" prefWidth="49.0" text="Liczba osób" />
             </columns>
         </TableView>
         <Button fx:id="choiceButton" layoutX="679.0" layoutY="454.0" mnemonicParsing="false" onAction="#choiceButtonOnAction" text="Wybierz" />

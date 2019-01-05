@@ -1,6 +1,8 @@
-package Model.ModelManagers;
+package model.managers;
 
-import Model.CustomExceptions.ErrorMessageException;
+import database.DatabaseManager;
+import model.Employee;
+import model.exceptions.ErrorMessageException;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -48,5 +50,37 @@ public class PasswordsManager {
         String newSecurePassword = generateSecurePassword(providedPassword, salt);
     // Check if two passwords are equal
         return newSecurePassword.equalsIgnoreCase(securedPassword);
+    }
+
+    public static void loginEmployee(String login, String providedPassword) throws ErrorMessageException {
+
+        Employee employee = DatabaseManager.getEmployeeByLogin(login);
+        if(employee == null)
+            throw new ErrorMessageException("Błędny login bądz hasło.");
+        Employee employee2 = DatabaseManager.getLoggedEmployee();
+        if (employee2 != null)
+            logoutEmployee(employee2);
+        // Encrypted and Base64 encoded password read from database
+        String securePassword = DatabaseManager.getPassword(login);
+        // Salt read from database
+        String salt = DatabaseManager.getSalt(login);
+
+        if (login == null)
+            throw new ErrorMessageException("Błędny login bądz hasło.");
+        if (providedPassword == null)
+            throw new ErrorMessageException("Błędny login bądz hasło.");
+        if (securePassword == null)
+            throw new ErrorMessageException("Błędny login bądz hasło.");
+        if (salt == null)
+            throw new ErrorMessageException("Błędny login bądz hasło.");
+        if (PasswordsManager.verifyUserPassword(providedPassword, securePassword, salt)){
+            DatabaseManager.setEmployeeActive(employee.getUUID());
+        }
+        else
+            throw new ErrorMessageException("Błędny login bądz hasło.");
+    }
+
+    public static void logoutEmployee(Employee employee) throws ErrorMessageException {
+        DatabaseManager.setEmployeeInactive(employee.getUUID());
     }
 }
